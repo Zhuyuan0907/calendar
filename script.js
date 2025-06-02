@@ -1,6 +1,6 @@
 // 管理員密碼設定（請修改成你想要的密碼）
 const ADMIN_PASSWORD = 'mySecretPassword123';
-const SECRET_KEY = 'mySecretKey456'; // 用於生成動態連結
+const SECRET_KEY = 'zhuyuan0907'; // 用於生成動態連結
 
 let currentDate = new Date();
 let currentView = 'month';
@@ -497,7 +497,7 @@ function openEventModal(event = null, date = null) {
         if (date) {
             form.eventDate.value = formatDate(date);
         }
-        form.eventColor.value = '#4285f4';
+        form.eventColor.value = '#3b82f6';
         deleteBtn.style.display = 'none';
     }
     
@@ -611,4 +611,5 @@ if (window.isAdminMode) {
     }
 }
 
-document.addEventListener('DOMContentLoaded', init);
+// 初始化函數
+window.addEventListener('DOMContentLoaded', init);
