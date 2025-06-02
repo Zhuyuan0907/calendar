@@ -1,5 +1,5 @@
 // 管理員密碼設定（請修改成你想要的密碼）
-const ADMIN_PASSWORD = 'mySecretPassword123';
+const ADMIN_PASSWORD = 'zhuyuan0907';
 const SECRET_KEY = 'zhuyuan0907'; // 用於生成動態連結
 
 let currentDate = new Date();
