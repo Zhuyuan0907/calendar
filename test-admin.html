@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>測試管理員認證</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            padding: 40px;
+            max-width: 800px;
+            margin: 0 auto;
+            background-color: #f8fafc;
+        }
+        .section {
+            background: white;
+            padding: 24px;
+            border-radius: 12px;
+            margin-bottom: 24px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+        h1 {
+            color: #1a1a1a;
+            margin-bottom: 32px;
+        }
+        h2 {
+            color: #6b7280;
+            font-size: 18px;
+            margin-bottom: 16px;
+        }
+        .status {
+            padding: 12px 20px;
+            border-radius: 8px;
+            margin-bottom: 16px;
+            font-weight: 500;
+        }
+        .status.authenticated {
+            background-color: #d1fae5;
+            color: #065f46;
+        }
+        .status.unauthenticated {
+            background-color: #fee2e2;
+            color: #991b1b;
+        }
+        .button {
+            background-color: #5f6fff;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            margin-right: 12px;
+            margin-bottom: 12px;
+            transition: all 0.2s;
+        }
+        .button:hover {
+            background-color: #4854ff;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+        .button.danger {
+            background-color: #ef4444;
+        }
+        .button.danger:hover {
+            background-color: #dc2626;
+        }
+        .link {
+            background-color: #f3f4f6;
+            padding: 12px;
+            border-radius: 8px;
+            word-break: break-all;
+            font-family: monospace;
+            margin-top: 12px;
+        }
+        .info {
+            background-color: #dbeafe;
+            color: #1e40af;
+            padding: 16px;
+            border-radius: 8px;
+            margin-bottom: 16px;
+        }
+        code {
+            background-color: #f3f4f6;
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-family: monospace;
+        }
+    </style>
+</head>
+<body>
+    <h1>管理員認證測試頁面</h1>
+    
+    <div class="section">
+        <h2>目前狀態</h2>
+        <div id="authStatus" class="status"></div>
+        <div id="tokenInfo"></div>
+    </div>
+    
+    <div class="section">
+        <h2>測試功能</h2>
+        <button class="button" onclick="generateAdminLink()">生成新的管理員連結</button>
+        <button class="button" onclick="goToAdmin()">前往管理員頁面</button>
+        <button class="button" onclick="goToMain()">前往主頁面</button>
+        <button class="button danger" onclick="clearAuth()">清除認證</button>
+        <div id="adminLink"></div>
+    </div>
+    
+    <div class="section">
+        <h2>使用說明</h2>
+        <div class="info">
+            <p><strong>密碼：</strong><code>zhuyuan0907</code></p>
+            <p><strong>快捷鍵：</strong>在主頁面按下 <code>Ctrl+Shift+A</code> (Mac: <code>Cmd+Shift+A</code>)</p>
+        </div>
+        <ol>
+            <li>點擊「生成新的管理員連結」</li>
+            <li>複製連結並在瀏覽器中開啟</li>
+            <li>輸入密碼 <code>zhuyuan0907</code></li>
+            <li>成功認證後即可編輯日曆</li>
+        </ol>
+    </div>
+
+    <script>
+        const ADMIN_PASSWORD = 'zhuyuan0907';
+        const SECRET_KEY = 'zhuyuan0907';
+        
+        function checkAuthStatus() {
+            const adminAuth = localStorage.getItem('adminAuth');
+            const statusEl = document.getElementById('authStatus');
+            const tokenEl = document.getElementById('tokenInfo');
+            
+            if (adminAuth) {
+                try {
+                    const [password, timestamp] = atob(adminAuth).split(':');
+                    const isValid = password === ADMIN_PASSWORD && (Date.now() - parseInt(timestamp)) < 24 * 60 * 60 * 1000;
+                    
+                    if (isValid) {
+                        statusEl.className = 'status authenticated';
+                        statusEl.textContent = '✅ 已認證（管理員模式啟用）';
+                        
+                        const expireTime = new Date(parseInt(timestamp) + 24 * 60 * 60 * 1000);
+                        tokenEl.innerHTML = `<p>認證到期時間：${expireTime.toLocaleString()}</p>`;
+                    } else {
+                        statusEl.className = 'status unauthenticated';
+                        statusEl.textContent = '❌ 認證已過期';
+                        tokenEl.innerHTML = '';
+                    }
+                } catch (e) {
+                    statusEl.className = 'status unauthenticated';
+                    statusEl.textContent = '❌ 認證資料無效';
+                    tokenEl.innerHTML = '';
+                }
+            } else {
+                statusEl.className = 'status unauthenticated';
+                statusEl.textContent = '❌ 未認證';
+                tokenEl.innerHTML = '';
+            }
+        }
+        
+        function generateAdminLink() {
+            const timestamp = Date.now();
+            const data = timestamp + ':' + SECRET_KEY;
+            const token = btoa(data);
+            const adminUrl = `admin.html?token=${token}`;
+            
+            const linkEl = document.getElementById('adminLink');
+            linkEl.innerHTML = `
+                <p style="margin-top: 16px; font-weight: 600;">管理員連結（10分鐘內有效）：</p>
+                <div class="link">${window.location.origin}/${adminUrl}</div>
+                <button class="button" style="margin-top: 12px;" onclick="copyLink('${window.location.origin}/${adminUrl}')">複製連結</button>
+            `;
+        }
+        
+        function copyLink(url) {
+            navigator.clipboard.writeText(url).then(() => {
+                alert('連結已複製到剪貼簿！');
+            });
+        }
+        
+        function clearAuth() {
+            localStorage.removeItem('adminAuth');
+            checkAuthStatus();
+            alert('認證已清除');
+        }
+        
+        function goToAdmin() {
+            generateAdminLink();
+            const timestamp = Date.now();
+            const data = timestamp + ':' + SECRET_KEY;
+            const token = btoa(data);
+            window.location.href = `admin.html?token=${token}`;
+        }
+        
+        function goToMain() {
+            window.location.href = 'index.html';
+        }
+        
+        // 初始檢查
+        checkAuthStatus();
+        setInterval(checkAuthStatus, 1000);
+    </script>
+</body>
+</html>

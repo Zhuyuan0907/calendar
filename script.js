@@ -14,6 +14,8 @@ const monthNames = ['一月', '二月', '三月', '四月', '五月', '六月', 
 const dayNames = ['日', '一', '二', '三', '四', '五', '六'];
 
 function init() {
+    console.log('Init called - isAdminMode:', window.isAdminMode, 'isAuthenticated:', isAuthenticated);
+    
     // 檢查是否為管理員模式
     if (window.isAdminMode) {
         checkAdminAuth();
@@ -23,9 +25,31 @@ function init() {
         setupSecretAccess();
     }
     
+    console.log('After checkAdminAuth - isAuthenticated:', isAuthenticated);
+    
     renderCalendar();
     setupEventListeners();
     loadEvents();
+    
+    // 更新 UI 以顯示管理員功能
+    updateAdminUI();
+}
+
+function updateAdminUI() {
+    if (isAuthenticated && window.isAdminMode) {
+        console.log('Updating UI for authenticated admin');
+        // 確保創建按鈕可見
+        const createBtn = document.getElementById('createBtn');
+        if (createBtn) {
+            createBtn.style.display = 'flex';
+        }
+        
+        // 添加視覺提示
+        document.body.classList.add('admin-authenticated');
+    } else {
+        console.log('Not in admin mode or not authenticated');
+        document.body.classList.remove('admin-authenticated');
+    }
 }
 
 function setupSecretAccess() {
@@ -104,6 +128,12 @@ function validateToken(token) {
 }
 
 function checkAdminAuth() {
+    // 如果已經認證，不需要再次檢查
+    if (isAuthenticated) {
+        console.log('Already authenticated, skipping auth check');
+        return;
+    }
+    
     // 檢查 URL 參數
     const urlParams = new URLSearchParams(window.location.search);
     const token = urlParams.get('token');
@@ -111,8 +141,8 @@ function checkAdminAuth() {
     if (token && validateToken(token)) {
         // Token 有效，顯示密碼輸入框
         showPasswordModal();
-    } else {
-        // Token 無效或過期
+    } else if (!isAuthenticated) {
+        // Token 無效或過期，且未認證
         alert('連結無效或已過期，請重新獲取管理員連結');
         window.location.href = 'index.html';
     }
@@ -303,6 +333,7 @@ function createCalendarCell(date, isOtherMonth) {
         eventElement.textContent = event.allDay ? `整天: ${event.title}` : event.title;
         eventElement.addEventListener('click', (e) => {
             e.stopPropagation();
+            console.log('Event clicked - isAuthenticated:', isAuthenticated);
             if (isAuthenticated) {
                 openEventModal(event);
             } else {
@@ -313,8 +344,10 @@ function createCalendarCell(date, isOtherMonth) {
     });
     
     // Add drag functionality only for admin
+    console.log('Creating cell for date:', date, 'isAuthenticated:', isAuthenticated);
     if (isAuthenticated) {
         cell.addEventListener('click', () => {
+            console.log('Cell clicked - isAuthenticated:', isAuthenticated, 'dragStartDate:', dragStartDate);
             if (!dragStartDate) {
                 openEventModal(null, date);
             }
@@ -470,7 +503,9 @@ function changeView() {
 }
 
 function openEventModal(event = null, date = null) {
+    console.log('openEventModal called - isAuthenticated:', isAuthenticated);
     if (!isAuthenticated) {
+        console.log('Not authenticated, cannot open modal');
         return;
     }
     
@@ -594,7 +629,7 @@ document.addEventListener('mouseup', () => {
     }
 });
 
-// 檢查管理員頁面的認證狀態
+// 在頁面載入時立即檢查認證狀態
 if (window.isAdminMode) {
     // 檢查 localStorage 的認證
     const adminAuth = localStorage.getItem('adminAuth');
@@ -604,6 +639,7 @@ if (window.isAdminMode) {
             // 檢查密碼和時間（24小時有效）
             if (password === ADMIN_PASSWORD && (Date.now() - parseInt(timestamp)) < 24 * 60 * 60 * 1000) {
                 isAuthenticated = true;
+                console.log('Auth restored from localStorage');
             }
         } catch (e) {
             console.error('Invalid auth data');
