@@ -1,5 +1,6 @@
 // 管理員密碼設定（請修改成你想要的密碼）
 const ADMIN_PASSWORD = 'mySecretPassword123';
+const SECRET_KEY = 'mySecretKey456'; // 用於生成動態連結
 
 let currentDate = new Date();
 let currentView = 'month';
@@ -18,6 +19,8 @@ function init() {
         checkAdminAuth();
     } else {
         isAuthenticated = false;
+        // 在主頁面隱藏管理員入口
+        setupSecretAccess();
     }
     
     renderCalendar();
@@ -25,48 +28,131 @@ function init() {
     loadEvents();
 }
 
+function setupSecretAccess() {
+    // 按下 Ctrl+Shift+A (或 Cmd+Shift+A 在 Mac) 顯示管理員連結
+    let keys = {};
+    document.addEventListener('keydown', (e) => {
+        keys[e.key] = true;
+        
+        if ((e.ctrlKey || e.metaKey) && e.shiftKey && keys['A']) {
+            e.preventDefault();
+            showAdminLink();
+        }
+    });
+    
+    document.addEventListener('keyup', (e) => {
+        delete keys[e.key];
+    });
+}
+
+function showAdminLink() {
+    const token = generateDynamicToken();
+    const adminUrl = `admin.html?token=${token}`;
+    
+    console.log('%c🔐 管理員連結（10分鐘內有效）：', 'color: #1a73e8; font-weight: bold; font-size: 14px');
+    console.log('%c' + window.location.origin + '/' + adminUrl, 'color: #0f9d58; font-size: 12px');
+    console.log('%c請記住您的密碼才能進入！', 'color: #f4b400; font-size: 12px');
+    
+    // 同時顯示提示
+    const message = document.createElement('div');
+    message.style.cssText = `
+        position: fixed;
+        bottom: 20px;
+        right: 20px;
+        background: #1a73e8;
+        color: white;
+        padding: 16px;
+        border-radius: 8px;
+        font-size: 14px;
+        z-index: 9999;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.2);
+    `;
+    message.textContent = '管理員連結已在控制台顯示（F12）';
+    document.body.appendChild(message);
+    
+    setTimeout(() => {
+        message.remove();
+    }, 3000);
+}
+
+function generateDynamicToken() {
+    const timestamp = Date.now();
+    const data = timestamp + ':' + SECRET_KEY;
+    // 簡單的編碼，實際應用應使用更安全的加密方法
+    return btoa(data);
+}
+
+function validateToken(token) {
+    try {
+        const decoded = atob(token);
+        const [timestamp, key] = decoded.split(':');
+        
+        // 檢查密鑰
+        if (key !== SECRET_KEY) {
+            return false;
+        }
+        
+        // 檢查時間（10分鐘有效期）
+        const tokenTime = parseInt(timestamp);
+        const currentTime = Date.now();
+        const tenMinutes = 10 * 60 * 1000;
+        
+        return (currentTime - tokenTime) < tenMinutes;
+    } catch (e) {
+        return false;
+    }
+}
+
 function checkAdminAuth() {
     // 檢查 URL 參數
     const urlParams = new URLSearchParams(window.location.search);
     const token = urlParams.get('token');
     
-    if (token) {
-        try {
-            const decoded = atob(token);
-            if (decoded === ADMIN_PASSWORD) {
-                isAuthenticated = true;
-                localStorage.setItem('adminToken', token);
-                return;
-            }
-        } catch (e) {
-            console.error('Invalid token');
-        }
-    }
-    
-    // 檢查 localStorage
-    const savedToken = localStorage.getItem('adminToken');
-    if (savedToken) {
-        try {
-            const decoded = atob(savedToken);
-            if (decoded === ADMIN_PASSWORD) {
-                isAuthenticated = true;
-                return;
-            }
-        } catch (e) {
-            console.error('Invalid saved token');
-        }
-    }
-    
-    // 如果都沒有通過，重導向到主頁
-    if (!isAuthenticated) {
-        alert('請使用有效的管理員連結');
+    if (token && validateToken(token)) {
+        // Token 有效，顯示密碼輸入框
+        showPasswordModal();
+    } else {
+        // Token 無效或過期
+        alert('連結無效或已過期，請重新獲取管理員連結');
         window.location.href = 'index.html';
     }
 }
 
-function generateAdminUrl() {
-    const token = btoa(ADMIN_PASSWORD);
-    return `admin.html?token=${token}`;
+function showPasswordModal() {
+    // 創建密碼輸入模態框
+    const modal = document.createElement('div');
+    modal.className = 'modal';
+    modal.style.display = 'flex';
+    modal.innerHTML = `
+        <div class="modal-content" style="max-width: 400px;">
+            <h3 style="margin-bottom: 24px;">請輸入管理員密碼</h3>
+            <form id="passwordForm">
+                <input type="password" id="adminPassword" placeholder="密碼" required style="width: 100%; padding: 12px; margin-bottom: 16px; border: 1px solid #dadce0; border-radius: 4px;">
+                <div class="modal-buttons">
+                    <button type="submit" class="save-btn">確認</button>
+                    <button type="button" class="cancel-btn" onclick="window.location.href='index.html'">取消</button>
+                </div>
+            </form>
+        </div>
+    `;
+    
+    document.body.appendChild(modal);
+    
+    document.getElementById('passwordForm').addEventListener('submit', (e) => {
+        e.preventDefault();
+        const password = document.getElementById('adminPassword').value;
+        
+        if (password === ADMIN_PASSWORD) {
+            isAuthenticated = true;
+            localStorage.setItem('adminAuth', btoa(password + ':' + Date.now()));
+            modal.remove();
+            // 重新載入頁面以套用管理員權限
+            location.reload();
+        } else {
+            alert('密碼錯誤');
+            document.getElementById('adminPassword').value = '';
+        }
+    });
 }
 
 function setupEventListeners() {
@@ -508,7 +594,21 @@ document.addEventListener('mouseup', () => {
     }
 });
 
-// 在控制台顯示管理員 URL（僅供開發使用）
-console.log('管理員連結:', generateAdminUrl());
+// 檢查管理員頁面的認證狀態
+if (window.isAdminMode) {
+    // 檢查 localStorage 的認證
+    const adminAuth = localStorage.getItem('adminAuth');
+    if (adminAuth) {
+        try {
+            const [password, timestamp] = atob(adminAuth).split(':');
+            // 檢查密碼和時間（24小時有效）
+            if (password === ADMIN_PASSWORD && (Date.now() - parseInt(timestamp)) < 24 * 60 * 60 * 1000) {
+                isAuthenticated = true;
+            }
+        } catch (e) {
+            console.error('Invalid auth data');
+        }
+    }
+}
 
 document.addEventListener('DOMContentLoaded', init);
