@@ -323,6 +323,33 @@ body {
     background-color: #f1f3f4;
 }
 
+.all-day-container {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 16px;
+}
+
+.all-day-container input[type="checkbox"] {
+    width: auto;
+    margin: 0;
+}
+
+.calendar-cell.dragging {
+    background-color: #e3f2fd;
+}
+
+.calendar-cell.drag-over {
+    background-color: #bbdefb;
+}
+
+.multi-day-event {
+    position: absolute;
+    left: 0;
+    right: 0;
+    z-index: 5;
+}
+
 @media (max-width: 768px) {
     .sidebar {
         display: none;

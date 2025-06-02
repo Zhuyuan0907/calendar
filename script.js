@@ -1,15 +1,29 @@
+// 設定你的密碼（請修改成你想要的密碼）
+const ADMIN_PASSWORD = 'your-password-here';
+
 let currentDate = new Date();
 let currentView = 'month';
 let events = JSON.parse(localStorage.getItem('calendarEvents')) || [];
 let selectedEvent = null;
+let isAuthenticated = false;
+let dragStartDate = null;
+let dragEndDate = null;
 
 const monthNames = ['一月', '二月', '三月', '四月', '五月', '六月', '七月', '八月', '九月', '十月', '十一月', '十二月'];
 const dayNames = ['日', '一', '二', '三', '四', '五', '六'];
 
 function init() {
+    checkAuthentication();
     renderCalendar();
     setupEventListeners();
     loadEvents();
+}
+
+function checkAuthentication() {
+    const authToken = localStorage.getItem('calendarAuthToken');
+    if (authToken === btoa(ADMIN_PASSWORD)) {
+        isAuthenticated = true;
+    }
 }
 
 function setupEventListeners() {
@@ -17,17 +31,61 @@ function setupEventListeners() {
     document.getElementById('nextBtn').addEventListener('click', () => navigateMonth(1));
     document.getElementById('todayBtn').addEventListener('click', goToToday);
     document.getElementById('viewSelector').addEventListener('change', changeView);
-    document.getElementById('createBtn').addEventListener('click', () => openEventModal());
+    document.getElementById('createBtn').addEventListener('click', () => {
+        if (isAuthenticated) {
+            openEventModal();
+        } else {
+            showAuthModal();
+        }
+    });
     document.querySelector('.close').addEventListener('click', closeEventModal);
     document.getElementById('cancelBtn').addEventListener('click', closeEventModal);
     document.getElementById('eventForm').addEventListener('submit', saveEvent);
     document.getElementById('deleteBtn').addEventListener('click', deleteEvent);
+    document.getElementById('authForm').addEventListener('submit', authenticate);
+    document.getElementById('allDayEvent').addEventListener('change', toggleTimeInputs);
     
     window.addEventListener('click', (e) => {
         if (e.target === document.getElementById('eventModal')) {
             closeEventModal();
         }
     });
+}
+
+function toggleTimeInputs() {
+    const allDayCheckbox = document.getElementById('allDayEvent');
+    const timeInputs = document.getElementById('timeInputs');
+    const startTime = document.getElementById('eventStartTime');
+    const endTime = document.getElementById('eventEndTime');
+    
+    if (allDayCheckbox.checked) {
+        timeInputs.style.display = 'none';
+        startTime.removeAttribute('required');
+        endTime.removeAttribute('required');
+    } else {
+        timeInputs.style.display = 'block';
+        startTime.setAttribute('required', 'required');
+        endTime.setAttribute('required', 'required');
+    }
+}
+
+function showAuthModal() {
+    document.getElementById('authModal').style.display = 'block';
+}
+
+function authenticate(e) {
+    e.preventDefault();
+    const password = document.getElementById('authPassword').value;
+    
+    if (password === ADMIN_PASSWORD) {
+        isAuthenticated = true;
+        localStorage.setItem('calendarAuthToken', btoa(password));
+        document.getElementById('authModal').style.display = 'none';
+        document.getElementById('authPassword').value = '';
+        openEventModal();
+    } else {
+        alert('密碼錯誤');
+    }
 }
 
 function renderCalendar() {
@@ -70,6 +128,7 @@ function renderMonthView(year, month) {
     const calendarGrid = document.getElementById('calendarGrid');
     calendarGrid.innerHTML = '';
     
+    // Previous month days
     for (let i = firstDayOfWeek; i > 0; i--) {
         const cell = createCalendarCell(
             new Date(year, month - 1, prevLastDate - i + 1),
@@ -78,11 +137,13 @@ function renderMonthView(year, month) {
         calendarGrid.appendChild(cell);
     }
     
+    // Current month days
     for (let date = 1; date <= lastDateOfMonth; date++) {
         const cell = createCalendarCell(new Date(year, month, date), false);
         calendarGrid.appendChild(cell);
     }
     
+    // Next month days
     const remainingCells = 42 - (firstDayOfWeek + lastDateOfMonth);
     for (let date = 1; date <= remainingCells; date++) {
         const cell = createCalendarCell(new Date(year, month + 1, date), true);
@@ -96,29 +157,113 @@ function createCalendarCell(date, isOtherMonth) {
     if (isOtherMonth) cell.classList.add('other-month');
     if (isToday(date)) cell.classList.add('today');
     
+    cell.dataset.date = formatDate(date);
+    
     const dateNumber = document.createElement('div');
     dateNumber.className = 'date-number';
     dateNumber.textContent = date.getDate();
     cell.appendChild(dateNumber);
     
+    // Get events for this date
     const dayEvents = getEventsForDate(date);
     dayEvents.forEach(event => {
         const eventElement = document.createElement('div');
         eventElement.className = 'event';
         eventElement.style.backgroundColor = event.color;
-        eventElement.textContent = event.title;
+        eventElement.textContent = event.allDay ? `整天: ${event.title}` : event.title;
         eventElement.addEventListener('click', (e) => {
             e.stopPropagation();
-            openEventModal(event);
+            if (isAuthenticated) {
+                openEventModal(event);
+            } else {
+                showEventDetails(event);
+            }
         });
         cell.appendChild(eventElement);
     });
     
-    cell.addEventListener('click', () => {
-        openEventModal(null, date);
-    });
+    // Add drag functionality
+    if (isAuthenticated) {
+        cell.addEventListener('click', () => {
+            openEventModal(null, date);
+        });
+        
+        cell.addEventListener('mousedown', (e) => {
+            if (e.target === cell || e.target.className === 'date-number') {
+                dragStartDate = date;
+                cell.classList.add('dragging');
+            }
+        });
+        
+        cell.addEventListener('mouseenter', () => {
+            if (dragStartDate) {
+                cell.classList.add('drag-over');
+                dragEndDate = date;
+                highlightDateRange(dragStartDate, date);
+            }
+        });
+        
+        cell.addEventListener('mouseup', () => {
+            if (dragStartDate && dragEndDate) {
+                openEventModalWithRange(dragStartDate, dragEndDate);
+                clearDragSelection();
+            }
+        });
+    }
     
     return cell;
+}
+
+function highlightDateRange(startDate, endDate) {
+    const cells = document.querySelectorAll('.calendar-cell');
+    const start = Math.min(startDate.getTime(), endDate.getTime());
+    const end = Math.max(startDate.getTime(), endDate.getTime());
+    
+    cells.forEach(cell => {
+        const cellDate = new Date(cell.dataset.date).getTime();
+        if (cellDate >= start && cellDate <= end) {
+            cell.classList.add('drag-over');
+        } else {
+            cell.classList.remove('drag-over');
+        }
+    });
+}
+
+function clearDragSelection() {
+    document.querySelectorAll('.calendar-cell').forEach(cell => {
+        cell.classList.remove('dragging', 'drag-over');
+    });
+    dragStartDate = null;
+    dragEndDate = null;
+}
+
+function openEventModalWithRange(startDate, endDate) {
+    const start = new Date(Math.min(startDate.getTime(), endDate.getTime()));
+    const end = new Date(Math.max(startDate.getTime(), endDate.getTime()));
+    
+    openEventModal(null, start);
+    document.getElementById('eventEndDate').value = formatDate(end);
+}
+
+function showEventDetails(event) {
+    let details = `標題: ${event.title}\n`;
+    details += `日期: ${event.date}`;
+    if (event.endDate) {
+        details += ` 至 ${event.endDate}`;
+    }
+    details += '\n';
+    
+    if (event.allDay) {
+        details += '整天活動\n';
+    } else {
+        details += `時間: ${event.startTime} - ${event.endTime}\n`;
+    }
+    
+    if (event.description) {
+        details += `說明: ${event.description}`;
+    }
+    
+    alert(details);
 }
 
 function renderWeekView() {
@@ -192,6 +337,11 @@ function changeView() {
 }
 
 function openEventModal(event = null, date = null) {
+    if (!isAuthenticated && !event) {
+        showAuthModal();
+        return;
+    }
+    
     selectedEvent = event;
     const modal = document.getElementById('eventModal');
     const form = document.getElementById('eventForm');
@@ -202,11 +352,13 @@ function openEventModal(event = null, date = null) {
         modalTitle.textContent = '編輯事件';
         form.eventTitle.value = event.title;
         form.eventDate.value = event.date;
-        form.eventStartTime.value = event.startTime;
-        form.eventEndTime.value = event.endTime;
+        form.eventEndDate.value = event.endDate || '';
+        form.allDayEvent.checked = event.allDay || false;
+        form.eventStartTime.value = event.startTime || '';
+        form.eventEndTime.value = event.endTime || '';
         form.eventDescription.value = event.description || '';
         form.eventColor.value = event.color;
-        deleteBtn.style.display = 'inline-block';
+        deleteBtn.style.display = isAuthenticated ? 'inline-block' : 'none';
     } else {
         modalTitle.textContent = '新增事件';
         form.reset();
@@ -217,24 +369,33 @@ function openEventModal(event = null, date = null) {
         deleteBtn.style.display = 'none';
     }
     
+    toggleTimeInputs();
     modal.style.display = 'block';
 }
 
 function closeEventModal() {
     document.getElementById('eventModal').style.display = 'none';
     selectedEvent = null;
+    clearDragSelection();
 }
 
 function saveEvent(e) {
     e.preventDefault();
+    
+    if (!isAuthenticated) {
+        showAuthModal();
+        return;
+    }
     
     const form = e.target;
     const eventData = {
         id: selectedEvent ? selectedEvent.id : Date.now().toString(),
         title: form.eventTitle.value,
         date: form.eventDate.value,
-        startTime: form.eventStartTime.value,
-        endTime: form.eventEndTime.value,
+        endDate: form.eventEndDate.value || null,
+        allDay: form.allDayEvent.checked,
+        startTime: form.allDayEvent.checked ? null : form.eventStartTime.value,
+        endTime: form.allDayEvent.checked ? null : form.eventEndTime.value,
         description: form.eventDescription.value,
         color: form.eventColor.value
     };
@@ -252,6 +413,11 @@ function saveEvent(e) {
 }
 
 function deleteEvent() {
+    if (!isAuthenticated) {
+        showAuthModal();
+        return;
+    }
+    
     if (selectedEvent && confirm('確定要刪除這個事件嗎？')) {
         events = events.filter(e => e.id !== selectedEvent.id);
         saveEvents();
@@ -270,7 +436,15 @@ function loadEvents() {
 
 function getEventsForDate(date) {
     const dateStr = formatDate(date);
-    return events.filter(event => event.date === dateStr);
+    return events.filter(event => {
+        if (event.endDate) {
+            const eventStart = new Date(event.date);
+            const eventEnd = new Date(event.endDate);
+            const checkDate = new Date(dateStr);
+            return checkDate >= eventStart && checkDate <= eventEnd;
+        }
+        return event.date === dateStr;
+    });
 }
 
 function formatDate(date) {
@@ -279,5 +453,12 @@ function formatDate(date) {
     const day = String(date.getDate()).padStart(2, '0');
     return `${year}-${month}-${day}`;
 }
+
+// Add global mouse up event to clear drag selection
+document.addEventListener('mouseup', () => {
+    if (dragStartDate && !dragEndDate) {
+        clearDragSelection();
+    }
+});
 
 document.addEventListener('DOMContentLoaded', init);

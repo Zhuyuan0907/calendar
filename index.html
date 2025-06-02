@@ -52,8 +52,15 @@
             <form id="eventForm">
                 <input type="text" id="eventTitle" placeholder="新增標題" required>
                 <input type="date" id="eventDate" required>
-                <input type="time" id="eventStartTime" required>
-                <input type="time" id="eventEndTime" required>
+                <input type="date" id="eventEndDate" placeholder="結束日期（可選）">
+                <div class="all-day-container">
+                    <input type="checkbox" id="allDayEvent">
+                    <label for="allDayEvent">整天</label>
+                </div>
+                <div id="timeInputs">
+                    <input type="time" id="eventStartTime" required>
+                    <input type="time" id="eventEndTime" required>
+                </div>
                 <textarea id="eventDescription" placeholder="新增說明" rows="3"></textarea>
                 <select id="eventColor">
                     <option value="#4285f4">藍色</option>
@@ -66,6 +73,19 @@
                     <button type="submit" class="save-btn">儲存</button>
                     <button type="button" class="delete-btn" id="deleteBtn" style="display: none;">刪除</button>
                     <button type="button" class="cancel-btn" id="cancelBtn">取消</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- 登入模態框 -->
+    <div class="modal" id="authModal">
+        <div class="modal-content">
+            <h3>請輸入密碼</h3>
+            <form id="authForm">
+                <input type="password" id="authPassword" placeholder="密碼" required>
+                <div class="modal-buttons">
+                    <button type="submit" class="save-btn">確認</button>
                 </div>
             </form>
         </div>
