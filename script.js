@@ -1,5 +1,5 @@
-// 設定你的密碼（請修改成你想要的密碼）
-const ADMIN_PASSWORD = 'your-password-here';
+// 管理員密碼設定（請修改成你想要的密碼）
+const ADMIN_PASSWORD = 'mySecretPassword123';
 
 let currentDate = new Date();
 let currentView = 'month';
@@ -13,17 +13,60 @@ const monthNames = ['一月', '二月', '三月', '四月', '五月', '六月', 
 const dayNames = ['日', '一', '二', '三', '四', '五', '六'];
 
 function init() {
-    checkAuthentication();
+    // 檢查是否為管理員模式
+    if (window.isAdminMode) {
+        checkAdminAuth();
+    } else {
+        isAuthenticated = false;
+    }
+    
     renderCalendar();
     setupEventListeners();
     loadEvents();
 }
 
-function checkAuthentication() {
-    const authToken = localStorage.getItem('calendarAuthToken');
-    if (authToken === btoa(ADMIN_PASSWORD)) {
-        isAuthenticated = true;
+function checkAdminAuth() {
+    // 檢查 URL 參數
+    const urlParams = new URLSearchParams(window.location.search);
+    const token = urlParams.get('token');
+    
+    if (token) {
+        try {
+            const decoded = atob(token);
+            if (decoded === ADMIN_PASSWORD) {
+                isAuthenticated = true;
+                localStorage.setItem('adminToken', token);
+                return;
+            }
+        } catch (e) {
+            console.error('Invalid token');
+        }
     }
+    
+    // 檢查 localStorage
+    const savedToken = localStorage.getItem('adminToken');
+    if (savedToken) {
+        try {
+            const decoded = atob(savedToken);
+            if (decoded === ADMIN_PASSWORD) {
+                isAuthenticated = true;
+                return;
+            }
+        } catch (e) {
+            console.error('Invalid saved token');
+        }
+    }
+    
+    // 如果都沒有通過，重導向到主頁
+    if (!isAuthenticated) {
+        alert('請使用有效的管理員連結');
+        window.location.href = 'index.html';
+    }
+}
+
+function generateAdminUrl() {
+    const token = btoa(ADMIN_PASSWORD);
+    return `admin.html?token=${token}`;
 }
 
 function setupEventListeners() {
@@ -31,22 +74,40 @@ function setupEventListeners() {
     document.getElementById('nextBtn').addEventListener('click', () => navigateMonth(1));
     document.getElementById('todayBtn').addEventListener('click', goToToday);
     document.getElementById('viewSelector').addEventListener('change', changeView);
-    document.getElementById('createBtn').addEventListener('click', () => {
-        if (isAuthenticated) {
-            openEventModal();
-        } else {
-            showAuthModal();
-        }
-    });
-    document.querySelector('.close').addEventListener('click', closeEventModal);
-    document.getElementById('cancelBtn').addEventListener('click', closeEventModal);
-    document.getElementById('eventForm').addEventListener('submit', saveEvent);
-    document.getElementById('deleteBtn').addEventListener('click', deleteEvent);
-    document.getElementById('authForm').addEventListener('submit', authenticate);
-    document.getElementById('allDayEvent').addEventListener('change', toggleTimeInputs);
+    
+    const createBtn = document.getElementById('createBtn');
+    if (createBtn) {
+        createBtn.addEventListener('click', () => openEventModal());
+    }
+    
+    const closeBtn = document.querySelector('.close');
+    if (closeBtn) {
+        closeBtn.addEventListener('click', closeEventModal);
+    }
+    
+    const cancelBtn = document.getElementById('cancelBtn');
+    if (cancelBtn) {
+        cancelBtn.addEventListener('click', closeEventModal);
+    }
+    
+    const eventForm = document.getElementById('eventForm');
+    if (eventForm) {
+        eventForm.addEventListener('submit', saveEvent);
+    }
+    
+    const deleteBtn = document.getElementById('deleteBtn');
+    if (deleteBtn) {
+        deleteBtn.addEventListener('click', deleteEvent);
+    }
+    
+    const allDayCheckbox = document.getElementById('allDayEvent');
+    if (allDayCheckbox) {
+        allDayCheckbox.addEventListener('change', toggleTimeInputs);
+    }
     
     window.addEventListener('click', (e) => {
-        if (e.target === document.getElementById('eventModal')) {
+        const modal = document.getElementById('eventModal');
+        if (e.target === modal) {
             closeEventModal();
         }
     });
@@ -66,25 +127,6 @@ function toggleTimeInputs() {
         timeInputs.style.display = 'block';
         startTime.setAttribute('required', 'required');
         endTime.setAttribute('required', 'required');
-    }
-}
-
-function showAuthModal() {
-    document.getElementById('authModal').style.display = 'block';
-}
-
-function authenticate(e) {
-    e.preventDefault();
-    const password = document.getElementById('authPassword').value;
-    
-    if (password === ADMIN_PASSWORD) {
-        isAuthenticated = true;
-        localStorage.setItem('calendarAuthToken', btoa(password));
-        document.getElementById('authModal').style.display = 'none';
-        document.getElementById('authPassword').value = '';
-        openEventModal();
-    } else {
-        alert('密碼錯誤');
     }
 }
 
@@ -127,6 +169,8 @@ function renderMonthView(year, month) {
     
     const calendarGrid = document.getElementById('calendarGrid');
     calendarGrid.innerHTML = '';
+    calendarGrid.style.gridTemplateRows = '';
+    calendarGrid.style.gridTemplateColumns = 'repeat(7, 1fr)';
     
     // Previous month days
     for (let i = firstDayOfWeek; i > 0; i--) {
@@ -182,10 +226,12 @@ function createCalendarCell(date, isOtherMonth) {
         cell.appendChild(eventElement);
     });
     
-    // Add drag functionality
+    // Add drag functionality only for admin
     if (isAuthenticated) {
         cell.addEventListener('click', () => {
-            openEventModal(null, date);
+            if (!dragStartDate) {
+                openEventModal(null, date);
+            }
         });
         
         cell.addEventListener('mousedown', (e) => {
@@ -204,10 +250,10 @@ function createCalendarCell(date, isOtherMonth) {
         });
         
         cell.addEventListener('mouseup', () => {
-            if (dragStartDate && dragEndDate) {
+            if (dragStartDate && dragEndDate && dragStartDate !== dragEndDate) {
                 openEventModalWithRange(dragStartDate, dragEndDate);
-                clearDragSelection();
             }
+            clearDragSelection();
         });
     }
     
@@ -269,6 +315,7 @@ function showEventDetails(event) {
 function renderWeekView() {
     const calendarGrid = document.getElementById('calendarGrid');
     calendarGrid.innerHTML = '';
+    calendarGrid.style.gridTemplateColumns = 'repeat(7, 1fr)';
     calendarGrid.style.gridTemplateRows = 'repeat(24, 60px)';
     
     const startOfWeek = new Date(currentDate);
@@ -337,8 +384,7 @@ function changeView() {
 }
 
 function openEventModal(event = null, date = null) {
-    if (!isAuthenticated && !event) {
-        showAuthModal();
+    if (!isAuthenticated) {
         return;
     }
     
@@ -358,7 +404,7 @@ function openEventModal(event = null, date = null) {
         form.eventEndTime.value = event.endTime || '';
         form.eventDescription.value = event.description || '';
         form.eventColor.value = event.color;
-        deleteBtn.style.display = isAuthenticated ? 'inline-block' : 'none';
+        deleteBtn.style.display = 'inline-block';
     } else {
         modalTitle.textContent = '新增事件';
         form.reset();
@@ -370,11 +416,14 @@ function openEventModal(event = null, date = null) {
     }
     
     toggleTimeInputs();
-    modal.style.display = 'block';
+    modal.style.display = 'flex';
 }
 
 function closeEventModal() {
-    document.getElementById('eventModal').style.display = 'none';
+    const modal = document.getElementById('eventModal');
+    if (modal) {
+        modal.style.display = 'none';
+    }
     selectedEvent = null;
     clearDragSelection();
 }
@@ -383,7 +432,6 @@ function saveEvent(e) {
     e.preventDefault();
     
     if (!isAuthenticated) {
-        showAuthModal();
         return;
     }
     
@@ -414,7 +462,6 @@ function saveEvent(e) {
 
 function deleteEvent() {
     if (!isAuthenticated) {
-        showAuthModal();
         return;
     }
     
@@ -460,5 +507,8 @@ document.addEventListener('mouseup', () => {
         clearDragSelection();
     }
 });
+
+// 在控制台顯示管理員 URL（僅供開發使用）
+console.log('管理員連結:', generateAdminUrl());
 
 document.addEventListener('DOMContentLoaded', init);

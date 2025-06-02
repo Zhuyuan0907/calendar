@@ -3,15 +3,28 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>我的日曆</title>
+    <title>日曆管理</title>
     <link rel="stylesheet" href="styles.css">
+    <style>
+        .admin-notice {
+            background-color: #1a73e8;
+            color: white;
+            padding: 8px 16px;
+            text-align: center;
+            font-size: 14px;
+        }
+        .sidebar {
+            display: block !important;
+        }
+    </style>
 </head>
 <body>
+    <div class="admin-notice">管理員模式</div>
     <div id="app">
         <header class="header">
             <div class="header-left">
                 <button class="menu-btn">☰</button>
-                <h1 class="logo">日曆</h1>
+                <h1 class="logo">日曆管理</h1>
             </div>
             <div class="header-center">
                 <button class="nav-btn" id="prevBtn">‹</button>
@@ -29,6 +42,13 @@
         </header>
         
         <main class="main-content">
+            <aside class="sidebar">
+                <button class="create-btn" id="createBtn">
+                    <span class="plus-icon">+</span>
+                    建立
+                </button>
+                <div class="mini-calendar" id="miniCalendar"></div>
+            </aside>
             
             <div class="calendar-container">
                 <div class="calendar-header" id="calendarHeader"></div>
@@ -71,19 +91,10 @@
         </div>
     </div>
 
-    <!-- 登入模態框 -->
-    <div class="modal" id="authModal">
-        <div class="modal-content">
-            <h3>請輸入密碼</h3>
-            <form id="authForm">
-                <input type="password" id="authPassword" placeholder="密碼" required>
-                <div class="modal-buttons">
-                    <button type="submit" class="save-btn">確認</button>
-                </div>
-            </form>
-        </div>
-    </div>
-
+    <script>
+        // 設定為管理員模式
+        window.isAdminMode = true;
+    </script>
     <script src="script.js"></script>
 </body>
 </html>

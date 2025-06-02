@@ -228,16 +228,18 @@ body {
     width: 100%;
     height: 100%;
     background-color: rgba(0,0,0,0.5);
+    align-items: center;
+    justify-content: center;
 }
 
 .modal-content {
     background-color: #fff;
-    margin: 10% auto;
     padding: 24px;
     border-radius: 8px;
     width: 90%;
     max-width: 500px;
     box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+    position: relative;
 }
 
 .close {
@@ -328,11 +330,19 @@ body {
     align-items: center;
     gap: 8px;
     margin-bottom: 16px;
+    cursor: pointer;
 }
 
 .all-day-container input[type="checkbox"] {
     width: auto;
     margin: 0;
+    cursor: pointer;
+}
+
+.all-day-container span {
+    font-size: 14px;
+    color: #3c4043;
+    user-select: none;
 }
 
 .calendar-cell.dragging {
