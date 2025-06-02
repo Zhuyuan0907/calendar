@@ -1,13 +1,76 @@
 <!DOCTYPE html>
 <html lang="zh-TW">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>我的行事曆</title>
-  <link rel="stylesheet" href="/src/styles/main.css">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>我的日曆</title>
+    <link rel="stylesheet" href="styles.css">
 </head>
 <body>
-  <div id="app"></div>
-  <script type="module" src="/src/main.js"></script>
+    <div id="app">
+        <header class="header">
+            <div class="header-left">
+                <button class="menu-btn">☰</button>
+                <h1 class="logo">日曆</h1>
+            </div>
+            <div class="header-center">
+                <button class="nav-btn" id="prevBtn">‹</button>
+                <button class="nav-btn" id="todayBtn">今天</button>
+                <button class="nav-btn" id="nextBtn">›</button>
+                <h2 id="currentMonth"></h2>
+            </div>
+            <div class="header-right">
+                <select id="viewSelector" class="view-selector">
+                    <option value="month">月</option>
+                    <option value="week">週</option>
+                    <option value="day">日</option>
+                </select>
+            </div>
+        </header>
+        
+        <main class="main-content">
+            <aside class="sidebar">
+                <button class="create-btn" id="createBtn">
+                    <span class="plus-icon">+</span>
+                    建立
+                </button>
+                <div class="mini-calendar" id="miniCalendar"></div>
+            </aside>
+            
+            <div class="calendar-container">
+                <div class="calendar-header" id="calendarHeader"></div>
+                <div class="calendar-grid" id="calendarGrid"></div>
+            </div>
+        </main>
+    </div>
+
+    <!-- 事件模態框 -->
+    <div class="modal" id="eventModal">
+        <div class="modal-content">
+            <span class="close">&times;</span>
+            <h3 id="modalTitle">新增事件</h3>
+            <form id="eventForm">
+                <input type="text" id="eventTitle" placeholder="新增標題" required>
+                <input type="date" id="eventDate" required>
+                <input type="time" id="eventStartTime" required>
+                <input type="time" id="eventEndTime" required>
+                <textarea id="eventDescription" placeholder="新增說明" rows="3"></textarea>
+                <select id="eventColor">
+                    <option value="#4285f4">藍色</option>
+                    <option value="#0f9d58">綠色</option>
+                    <option value="#f4b400">黃色</option>
+                    <option value="#db4437">紅色</option>
+                    <option value="#673ab7">紫色</option>
+                </select>
+                <div class="modal-buttons">
+                    <button type="submit" class="save-btn">儲存</button>
+                    <button type="button" class="delete-btn" id="deleteBtn" style="display: none;">刪除</button>
+                    <button type="button" class="cancel-btn" id="cancelBtn">取消</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
 </body>
 </html>
