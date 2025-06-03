@@ -3,29 +3,16 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>日曆管理</title>
+    <title>Test Calendar Updates</title>
     <link rel="stylesheet" href="styles.css">
-    <style>
-        .admin-notice {
-            background-color: #1a73e8;
-            color: white;
-            padding: 8px 16px;
-            text-align: center;
-            font-size: 14px;
-        }
-        .sidebar {
-            display: block !important;
-        }
-    </style>
 </head>
 <body>
-    <div class="admin-notice">管理員模式</div>
     <div id="app">
         <div class="mobile-overlay" id="mobileOverlay"></div>
         <header class="header">
             <div class="header-left">
                 <button class="menu-btn">☰</button>
-                <h1 class="logo">日曆管理</h1>
+                <h1 class="logo">日曆測試</h1>
             </div>
             <div class="header-center">
                 <button class="nav-btn" id="prevBtn">‹</button>
@@ -43,17 +30,6 @@
         </header>
         
         <main class="main-content">
-            <aside class="sidebar">
-                <button class="create-btn" id="createBtn">
-                    <span class="plus-icon">+</span>
-                    建立
-                </button>
-                <div class="upcoming-events">
-                    <h3>即將到來的事件</h3>
-                    <div id="upcomingEventsList"></div>
-                </div>
-            </aside>
-            
             <div class="calendar-container">
                 <div class="calendar-header" id="calendarHeader"></div>
                 <div class="calendar-grid" id="calendarGrid"></div>
@@ -96,8 +72,42 @@
     </div>
 
     <script>
-        // 設定為管理員模式
-        window.isAdminMode = true;
+        // 添加一些測試事件
+        const testEvents = [
+            {
+                id: '1',
+                title: '團隊會議',
+                date: new Date().toISOString().split('T')[0],
+                allDay: false,
+                startTime: '10:00',
+                endTime: '11:00',
+                description: '每週團隊同步會議',
+                color: '#3b82f6'
+            },
+            {
+                id: '2',
+                title: '專案截止日',
+                date: new Date(Date.now() + 2 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
+                allDay: true,
+                startTime: null,
+                endTime: null,
+                description: '重要專案交付',
+                color: '#ef4444'
+            },
+            {
+                id: '3',
+                title: '客戶簡報',
+                date: new Date(Date.now() + 5 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
+                allDay: false,
+                startTime: '14:30',
+                endTime: '16:00',
+                description: '新產品展示',
+                color: '#10b981'
+            }
+        ];
+        
+        // 將測試事件存入 localStorage
+        localStorage.setItem('calendarEvents', JSON.stringify(testEvents));
     </script>
     <script src="script.js"></script>
 </body>

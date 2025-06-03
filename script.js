@@ -30,9 +30,15 @@ function init() {
     renderCalendar();
     setupEventListeners();
     loadEvents();
+    renderUpcomingEvents();
     
     // 更新 UI 以顯示管理員功能
     updateAdminUI();
+    
+    // 設置定時器來更新即將到來的事件
+    setInterval(() => {
+        renderUpcomingEvents();
+    }, 60000); // 每分鐘更新一次
 }
 
 function updateAdminUI() {
@@ -191,6 +197,25 @@ function setupEventListeners() {
     document.getElementById('todayBtn').addEventListener('click', goToToday);
     document.getElementById('viewSelector').addEventListener('change', changeView);
     
+    // 添加手機選單切換功能
+    const menuBtn = document.querySelector('.menu-btn');
+    const sidebar = document.querySelector('.sidebar');
+    const mobileOverlay = document.getElementById('mobileOverlay');
+    
+    if (menuBtn) {
+        menuBtn.addEventListener('click', () => {
+            sidebar?.classList.toggle('active');
+            mobileOverlay?.classList.toggle('active');
+        });
+    }
+    
+    if (mobileOverlay) {
+        mobileOverlay.addEventListener('click', () => {
+            sidebar?.classList.remove('active');
+            mobileOverlay.classList.remove('active');
+        });
+    }
+    
     const createBtn = document.getElementById('createBtn');
     if (createBtn) {
         createBtn.addEventListener('click', () => openEventModal());
@@ -227,6 +252,18 @@ function setupEventListeners() {
             closeEventModal();
         }
     });
+    
+    // 手機版選單按鈕
+    const menuBtn = document.querySelector('.menu-btn');
+    if (menuBtn) {
+        menuBtn.addEventListener('click', toggleMobileMenu);
+    }
+    
+    // 手機版遮罩層
+    const mobileOverlay = document.getElementById('mobileOverlay');
+    if (mobileOverlay) {
+        mobileOverlay.addEventListener('click', closeMobileMenu);
+    }
 }
 
 function toggleTimeInputs() {
@@ -278,36 +315,34 @@ function renderCalendarHeader() {
 function renderMonthView(year, month) {
     const firstDay = new Date(year, month, 1);
     const lastDay = new Date(year, month + 1, 0);
-    const prevLastDay = new Date(year, month, 0);
     const firstDayOfWeek = firstDay.getDay();
     const lastDateOfMonth = lastDay.getDate();
-    const prevLastDate = prevLastDay.getDate();
     
     const calendarGrid = document.getElementById('calendarGrid');
     calendarGrid.innerHTML = '';
-    calendarGrid.style.gridTemplateRows = '';
+    calendarGrid.style.gridTemplateRows = 'repeat(6, 1fr)';
     calendarGrid.style.gridTemplateColumns = 'repeat(7, 1fr)';
     
-    // Previous month days
-    for (let i = firstDayOfWeek; i > 0; i--) {
-        const cell = createCalendarCell(
-            new Date(year, month - 1, prevLastDate - i + 1),
-            true
-        );
-        calendarGrid.appendChild(cell);
+    // 添加空白格子來填充第一週之前的空間
+    for (let i = 0; i < firstDayOfWeek; i++) {
+        const emptyCell = document.createElement('div');
+        emptyCell.className = 'calendar-cell empty-cell';
+        calendarGrid.appendChild(emptyCell);
     }
     
-    // Current month days
+    // 只渲染當前月份的日期
     for (let date = 1; date <= lastDateOfMonth; date++) {
         const cell = createCalendarCell(new Date(year, month, date), false);
         calendarGrid.appendChild(cell);
     }
     
-    // Next month days
-    const remainingCells = 42 - (firstDayOfWeek + lastDateOfMonth);
-    for (let date = 1; date <= remainingCells; date++) {
-        const cell = createCalendarCell(new Date(year, month + 1, date), true);
-        calendarGrid.appendChild(cell);
+    // 添加空白格子來填充最後一週之後的空間
+    const totalCells = firstDayOfWeek + lastDateOfMonth;
+    const remainingCells = 42 - totalCells;
+    for (let i = 0; i < remainingCells; i++) {
+        const emptyCell = document.createElement('div');
+        emptyCell.className = 'calendar-cell empty-cell';
+        calendarGrid.appendChild(emptyCell);
     }
 }
 
@@ -324,13 +359,32 @@ function createCalendarCell(date, isOtherMonth) {
     dateNumber.textContent = date.getDate();
     cell.appendChild(dateNumber);
     
-    // Get events for this date
+    // 創建事件容器
+    const eventsContainer = document.createElement('div');
+    eventsContainer.className = 'events-container';
+    
+    // 獲取當天的事件
     const dayEvents = getEventsForDate(date);
-    dayEvents.forEach(event => {
+    const maxEventsToShow = 3; // 最多顯示3個事件
+    
+    dayEvents.slice(0, maxEventsToShow).forEach(event => {
         const eventElement = document.createElement('div');
         eventElement.className = 'event';
         eventElement.style.backgroundColor = event.color;
-        eventElement.textContent = event.allDay ? `整天: ${event.title}` : event.title;
+        
+        // 創建事件內容結構
+        if (!event.allDay && event.startTime) {
+            const eventTime = document.createElement('span');
+            eventTime.className = 'event-time';
+            eventTime.textContent = event.startTime;
+            eventElement.appendChild(eventTime);
+        }
+        
+        const eventTitle = document.createElement('span');
+        eventTitle.className = 'event-title';
+        eventTitle.textContent = event.title;
+        eventElement.appendChild(eventTitle);
+        
         eventElement.addEventListener('click', (e) => {
             e.stopPropagation();
             console.log('Event clicked - isAuthenticated:', isAuthenticated);
@@ -340,8 +394,18 @@ function createCalendarCell(date, isOtherMonth) {
                 showEventDetails(event);
             }
         });
-        cell.appendChild(eventElement);
+        eventsContainer.appendChild(eventElement);
     });
+    
+    // 如果有更多事件，顯示提示
+    if (dayEvents.length > maxEventsToShow) {
+        const moreEvents = document.createElement('div');
+        moreEvents.className = 'more-events';
+        moreEvents.textContent = `還有 ${dayEvents.length - maxEventsToShow} 個事件`;
+        eventsContainer.appendChild(moreEvents);
+    }
+    
+    cell.appendChild(eventsContainer);
     
     // Add drag functionality only for admin
     console.log('Creating cell for date:', date, 'isAuthenticated:', isAuthenticated);
@@ -490,11 +554,13 @@ function navigateMonth(direction) {
         currentDate.setDate(currentDate.getDate() + direction);
     }
     renderCalendar();
+    renderUpcomingEvents();
 }
 
 function goToToday() {
     currentDate = new Date();
     renderCalendar();
+    renderUpcomingEvents();
 }
 
 function changeView() {
@@ -578,6 +644,7 @@ function saveEvent(e) {
     
     saveEvents();
     renderCalendar();
+    renderUpcomingEvents();
     closeEventModal();
 }
 
@@ -590,12 +657,14 @@ function deleteEvent() {
         events = events.filter(e => e.id !== selectedEvent.id);
         saveEvents();
         renderCalendar();
+        renderUpcomingEvents();
         closeEventModal();
     }
 }
 
 function saveEvents() {
     localStorage.setItem('calendarEvents', JSON.stringify(events));
+    renderUpcomingEvents();
 }
 
 function loadEvents() {
@@ -644,6 +713,223 @@ if (window.isAdminMode) {
         } catch (e) {
             console.error('Invalid auth data');
         }
+    }
+}
+
+// 渲染即將到來的事件
+function renderUpcomingEvents() {
+    const sidebar = document.querySelector('.sidebar');
+    if (!sidebar) {
+        // 如果側邊欄不存在，創建它
+        const mainContent = document.querySelector('.main-content');
+        if (mainContent) {
+            const newSidebar = document.createElement('div');
+            newSidebar.className = 'sidebar';
+            
+            // 創建按鈕（只在管理員模式下顯示）
+            if (isAuthenticated) {
+                const createBtn = document.createElement('button');
+                createBtn.id = 'createBtn';
+                createBtn.className = 'create-btn';
+                createBtn.innerHTML = '<span class="plus-icon">+</span> 新增事件';
+                createBtn.addEventListener('click', () => openEventModal());
+                newSidebar.appendChild(createBtn);
+            }
+            
+            // 創建即將到來的事件區域
+            const upcomingSection = document.createElement('div');
+            upcomingSection.className = 'upcoming-events';
+            upcomingSection.innerHTML = '<h3>即將到來的事件</h3><div id="upcomingEventsList"></div>';
+            newSidebar.appendChild(upcomingSection);
+            
+            mainContent.insertBefore(newSidebar, mainContent.firstChild);
+        }
+    }
+    
+    const upcomingEventsList = document.getElementById('upcomingEventsList');
+    if (!upcomingEventsList) return;
+    
+    const now = new Date();
+    const fourteenDaysLater = new Date(now.getTime() + 14 * 24 * 60 * 60 * 1000);
+    
+    // 過濾和排序即將到來的事件
+    const upcomingEvents = events.filter(event => {
+        const eventDate = new Date(event.date);
+        if (event.startTime && !event.allDay) {
+            const [hours, minutes] = event.startTime.split(':');
+            eventDate.setHours(parseInt(hours), parseInt(minutes));
+        }
+        return eventDate >= now && eventDate <= fourteenDaysLater;
+    }).sort((a, b) => {
+        const dateA = new Date(a.date);
+        const dateB = new Date(b.date);
+        if (a.startTime && !a.allDay) {
+            const [hoursA, minutesA] = a.startTime.split(':');
+            dateA.setHours(parseInt(hoursA), parseInt(minutesA));
+        }
+        if (b.startTime && !b.allDay) {
+            const [hoursB, minutesB] = b.startTime.split(':');
+            dateB.setHours(parseInt(hoursB), parseInt(minutesB));
+        }
+        return dateA - dateB;
+    });
+    
+    upcomingEventsList.innerHTML = '';
+    
+    if (upcomingEvents.length === 0) {
+        upcomingEventsList.innerHTML = '<div class="no-events">沒有即將到來的事件</div>';
+        return;
+    }
+    
+    // 顯示最多10個即將到來的事件
+    upcomingEvents.slice(0, 10).forEach(event => {
+        const eventItem = document.createElement('div');
+        eventItem.className = 'upcoming-event-item';
+        eventItem.style.borderLeftColor = event.color;
+        
+        const eventDate = new Date(event.date);
+        const eventTimeStr = formatEventTime(eventDate, event);
+        
+        eventItem.innerHTML = `
+            <div class="upcoming-event-time">${eventTimeStr}</div>
+            <div class="upcoming-event-title">${event.title}</div>
+        `;
+        
+        eventItem.addEventListener('click', () => {
+            if (isAuthenticated) {
+                openEventModal(event);
+            } else {
+                showEventDetails(event);
+            }
+        });
+        
+        upcomingEventsList.appendChild(eventItem);
+    });
+}
+
+// 格式化事件時間顯示
+function formatEventTime(date, event) {
+    const now = new Date();
+    const tomorrow = new Date(now);
+    tomorrow.setDate(tomorrow.getDate() + 1);
+    
+    const dateOptions = { month: 'numeric', day: 'numeric' };
+    let dateStr = '';
+    
+    if (date.toDateString() === now.toDateString()) {
+        dateStr = '今天';
+    } else if (date.toDateString() === tomorrow.toDateString()) {
+        dateStr = '明天';
+    } else {
+        dateStr = date.toLocaleDateString('zh-TW', dateOptions);
+    }
+    
+    if (event.allDay) {
+        return `${dateStr} · 整天`;
+    } else if (event.startTime) {
+        return `${dateStr} · ${event.startTime}`;
+    } else {
+        return dateStr;
+    }
+}
+
+// 新增：渲染即將到來的事件
+function renderUpcomingEvents() {
+    const upcomingList = document.getElementById('upcomingEventsList');
+    if (!upcomingList) return;
+    
+    const now = new Date();
+    const twoWeeksLater = new Date(now.getTime() + 14 * 24 * 60 * 60 * 1000);
+    
+    // 獲取所有事件並排序
+    const upcomingEvents = events.filter(event => {
+        const eventDate = new Date(event.date);
+        if (event.allDay) {
+            eventDate.setHours(23, 59, 59);
+        } else {
+            const [hours, minutes] = event.startTime.split(':');
+            eventDate.setHours(parseInt(hours), parseInt(minutes));
+        }
+        return eventDate > now && eventDate <= twoWeeksLater;
+    }).sort((a, b) => {
+        const dateA = new Date(a.date + ' ' + (a.startTime || '00:00'));
+        const dateB = new Date(b.date + ' ' + (b.startTime || '00:00'));
+        return dateA - dateB;
+    });
+    
+    upcomingList.innerHTML = '';
+    
+    if (upcomingEvents.length === 0) {
+        upcomingList.innerHTML = '<div class="no-events">未來兩週沒有事件</div>';
+        return;
+    }
+    
+    // 顯示最多10個事件
+    upcomingEvents.slice(0, 10).forEach(event => {
+        const eventItem = document.createElement('div');
+        eventItem.className = 'upcoming-event-item';
+        eventItem.style.borderLeftColor = event.color;
+        
+        const eventDate = new Date(event.date);
+        const dateStr = formatEventDate(eventDate);
+        
+        const timeDiv = document.createElement('div');
+        timeDiv.className = 'upcoming-event-time';
+        if (event.allDay) {
+            timeDiv.textContent = dateStr + ' - 整天';
+        } else {
+            timeDiv.textContent = dateStr + ' ' + event.startTime;
+        }
+        
+        const titleDiv = document.createElement('div');
+        titleDiv.className = 'upcoming-event-title';
+        titleDiv.textContent = event.title;
+        
+        eventItem.appendChild(timeDiv);
+        eventItem.appendChild(titleDiv);
+        
+        eventItem.addEventListener('click', () => {
+            if (isAuthenticated) {
+                openEventModal(event);
+            } else {
+                showEventDetails(event);
+            }
+        });
+        
+        upcomingList.appendChild(eventItem);
+    });
+}
+
+function formatEventDate(date) {
+    const today = new Date();
+    const tomorrow = new Date(today);
+    tomorrow.setDate(tomorrow.getDate() + 1);
+    
+    if (date.toDateString() === today.toDateString()) {
+        return '今天';
+    } else if (date.toDateString() === tomorrow.toDateString()) {
+        return '明天';
+    } else {
+        return `${date.getMonth() + 1}月${date.getDate()}日`;
+    }
+}
+
+// 新增：手機版選單切換
+function toggleMobileMenu() {
+    const sidebar = document.querySelector('.sidebar');
+    const overlay = document.getElementById('mobileOverlay');
+    if (sidebar) {
+        sidebar.classList.toggle('active');
+        overlay.classList.toggle('active');
+    }
+}
+
+function closeMobileMenu() {
+    const sidebar = document.querySelector('.sidebar');
+    const overlay = document.getElementById('mobileOverlay');
+    if (sidebar) {
+        sidebar.classList.remove('active');
+        overlay.classList.remove('active');
     }
 }
 
