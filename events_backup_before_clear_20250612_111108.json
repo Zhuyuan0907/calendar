@@ -1,0 +1,219 @@
+{
+  "events": [
+    {
+      "id": "evt001",
+      "title": "夏季程式設計營",
+      "description": "為期五天的青少年程式設計營隊，學習Python基礎與專案開發",
+      "startDate": "2024-07-15",
+      "endDate": "2024-07-19",
+      "startTime": "09:00",
+      "endTime": "17:00",
+      "category": "camp",
+      "location": "台北科技大樓",
+      "instructor": "王老師",
+      "participants": 30,
+      "recurrence": {
+        "type": "none"
+      },
+      "color": "#8b5cf6",
+      "tags": ["教育", "營隊", "程式設計"],
+      "reminder": {
+        "enabled": true,
+        "before": "1 day"
+      }
+    },
+    {
+      "id": "evt002",
+      "title": "每週團隊會議",
+      "description": "討論專案進度與下週計畫",
+      "startDate": "2024-01-08",
+      "endDate": "2024-12-30",
+      "startTime": "14:00",
+      "endTime": "15:00",
+      "category": "meeting",
+      "location": "線上會議室",
+      "recurrence": {
+        "type": "weekly",
+        "daysOfWeek": ["monday"],
+        "interval": 1
+      },
+      "color": "#f59e0b",
+      "tags": ["會議", "例行"],
+      "attendees": ["team@company.com"]
+    },
+    {
+      "id": "evt003",
+      "title": "中秋節",
+      "description": "國定假日",
+      "startDate": "2024-09-17",
+      "endDate": "2024-09-17",
+      "allDay": true,
+      "category": "holiday",
+      "recurrence": {
+        "type": "none"
+      },
+      "color": "#ef4444",
+      "tags": ["假日", "節慶"]
+    },
+    {
+      "id": "evt004",
+      "title": "專案截止日",
+      "description": "第三季專案交付期限",
+      "startDate": "2024-09-30",
+      "endDate": "2024-09-30",
+      "startTime": "23:59",
+      "category": "work",
+      "priority": "high",
+      "color": "#3b82f6",
+      "tags": ["截止日", "重要"],
+      "reminder": {
+        "enabled": true,
+        "before": "3 days"
+      }
+    },
+    {
+      "id": "evt005",
+      "title": "瑜珈課",
+      "description": "週二週四瑜珈課程",
+      "startDate": "2024-01-02",
+      "endDate": "2024-12-31",
+      "startTime": "18:30",
+      "endTime": "19:30",
+      "category": "health",
+      "location": "健身房B1",
+      "recurrence": {
+        "type": "weekly",
+        "daysOfWeek": ["tuesday", "thursday"],
+        "interval": 1
+      },
+      "color": "#ec4899",
+      "tags": ["運動", "健康"]
+    },
+    {
+      "id": "evt006",
+      "title": "寒假冬令營",
+      "description": "STEAM教育冬令營，包含科學實驗、藝術創作、機器人程式設計",
+      "startDate": "2024-02-05",
+      "endDate": "2024-02-09",
+      "startTime": "08:30",
+      "endTime": "16:30",
+      "category": "camp",
+      "location": "創客空間",
+      "price": 8500,
+      "earlyBird": {
+        "deadline": "2024-01-15",
+        "discount": 0.9
+      },
+      "capacity": 40,
+      "color": "#8b5cf6",
+      "tags": ["營隊", "STEAM", "寒假"],
+      "meals": ["午餐", "點心"]
+    },
+    {
+      "id": "evt007",
+      "title": "生日派對",
+      "description": "小明的生日慶祝會",
+      "startDate": "2024-08-15",
+      "endDate": "2024-08-15",
+      "startTime": "19:00",
+      "endTime": "22:00",
+      "category": "personal",
+      "location": "家裡",
+      "color": "#10b981",
+      "tags": ["生日", "慶祝"]
+    },
+    {
+      "id": "evt008",
+      "title": "季度業績檢討",
+      "description": "Q3業績檢討與Q4規劃",
+      "startDate": "2024-10-05",
+      "endDate": "2024-10-05",
+      "startTime": "09:00",
+      "endTime": "12:00",
+      "category": "meeting",
+      "location": "大會議室",
+      "priority": "high",
+      "color": "#f59e0b",
+      "tags": ["季度會議", "重要"],
+      "attachments": ["Q3_report.pdf", "Q4_plan.pptx"]
+    },
+    {
+      "id": "evt009",
+      "title": "線上研討會",
+      "description": "AI在教育領域的應用",
+      "startDate": "2024-11-20",
+      "endDate": "2024-11-20",
+      "startTime": "20:00",
+      "endTime": "21:30",
+      "category": "education",
+      "location": "Zoom線上",
+      "registrationUrl": "https://example.com/register",
+      "color": "#06b6d4",
+      "tags": ["研討會", "AI", "教育"]
+    },
+    {
+      "id": "evt010",
+      "title": "月度健康檢查",
+      "description": "定期健康檢查提醒",
+      "startDate": "2024-01-15",
+      "endDate": "2024-12-15",
+      "startTime": "10:00",
+      "endTime": "11:00",
+      "category": "health",
+      "location": "診所",
+      "recurrence": {
+        "type": "monthly",
+        "dayOfMonth": 15,
+        "interval": 1
+      },
+      "color": "#ec4899",
+      "tags": ["健康", "例行檢查"],
+      "reminder": {
+        "enabled": true,
+        "before": "1 week"
+      }
+    }
+  ],
+  "categories": {
+    "work": {
+      "name": "工作",
+      "color": "#3b82f6"
+    },
+    "personal": {
+      "name": "個人",
+      "color": "#10b981"
+    },
+    "meeting": {
+      "name": "會議",
+      "color": "#f59e0b"
+    },
+    "holiday": {
+      "name": "假日",
+      "color": "#ef4444"
+    },
+    "camp": {
+      "name": "營隊",
+      "color": "#8b5cf6"
+    },
+    "education": {
+      "name": "教育",
+      "color": "#06b6d4"
+    },
+    "health": {
+      "name": "健康",
+      "color": "#ec4899"
+    },
+    "social": {
+      "name": "社交",
+      "color": "#f97316"
+    }
+  },
+  "settings": {
+    "defaultView": "month",
+    "weekStartsOn": "sunday",
+    "timeFormat": "24h",
+    "language": "zh-TW",
+    "enableNotifications": true,
+    "theme": "auto"
+  }
+}

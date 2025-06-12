@@ -3,88 +3,122 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>我的日曆</title>
+    <title>竺原ㄉ行事曆 v1.1</title>
     <link rel="stylesheet" href="styles.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 </head>
 <body>
-    <div id="app">
-        <div class="mobile-overlay" id="mobileOverlay"></div>
-        <header class="header">
+    <div class="container">
+        <header>
             <div class="header-left">
-                <button class="menu-btn">☰</button>
-                <h1 class="logo">日曆</h1>
+                <h1>竺原ㄉ行事曆 v1.1</h1>
+                <button id="todayBtn" class="today-btn">今天</button>
             </div>
             <div class="header-center">
-                <button class="nav-btn" id="prevBtn">‹</button>
-                <button class="nav-btn" id="todayBtn">今天</button>
-                <button class="nav-btn" id="nextBtn">›</button>
-                <h2 id="currentMonth"></h2>
+                <div class="nav-controls">
+                    <button id="prevBtn" class="nav-btn">‹</button>
+                    <h2 id="currentPeriod">2024年11月</h2>
+                    <button id="nextBtn" class="nav-btn">›</button>
+                </div>
             </div>
             <div class="header-right">
-                <select id="viewSelector" class="view-selector">
-                    <option value="month">月</option>
-                    <option value="week">週</option>
-                    <option value="day">日</option>
-                </select>
+                <div class="search-container">
+                    <input type="text" id="searchInput" placeholder="搜尋事件...">
+                </div>
+                <div class="filter-container">
+                    <select id="categoryFilter">
+                        <option value="">所有分類</option>
+                    </select>
+                </div>
+                <div class="view-controls">
+                    <button class="view-btn active" data-view="month">月</button>
+                    <button class="view-btn" data-view="week">週</button>
+                    <button class="view-btn" data-view="day">日</button>
+                    <button class="view-btn" data-view="list">列表</button>
+                </div>
+                <button id="themeToggle" class="theme-btn">◐</button>
             </div>
         </header>
         
-        <main class="main-content">
+        <main>
+            <!-- 月曆視圖 -->
+            <div id="monthView" class="view-container active">
+                <div class="weekdays">
+                    <div>日</div>
+                    <div>一</div>
+                    <div>二</div>
+                    <div>三</div>
+                    <div>四</div>
+                    <div>五</div>
+                    <div>六</div>
+                </div>
+                <div id="calendar" class="calendar"></div>
+            </div>
             
-            <div class="calendar-container">
-                <div class="calendar-header" id="calendarHeader"></div>
-                <div class="calendar-grid" id="calendarGrid"></div>
+            <!-- 週視圖 -->
+            <div id="weekView" class="view-container">
+                <div class="week-header">
+                    <div class="time-label"></div>
+                    <div class="week-days" id="weekDays"></div>
+                </div>
+                <div class="week-content">
+                    <div class="time-column" id="timeColumn"></div>
+                    <div class="week-grid" id="weekGrid"></div>
+                </div>
+            </div>
+            
+            <!-- 日視圖 -->
+            <div id="dayView" class="view-container">
+                <div class="day-header">
+                    <h3 id="dayTitle"></h3>
+                </div>
+                <div class="day-content">
+                    <div class="time-column" id="dayTimeColumn"></div>
+                    <div class="day-events" id="dayEvents"></div>
+                </div>
+            </div>
+            
+            <!-- 列表視圖 -->
+            <div id="listView" class="view-container">
+                <div class="list-header">
+                    <button id="exportBtn" class="export-btn">匯出 CSV</button>
+                </div>
+                <div class="events-list" id="eventsList"></div>
             </div>
         </main>
+        
+        <!-- 側邊欄 -->
+        <aside class="sidebar">
+            <div class="mini-calendar" id="miniCalendar"></div>
+            <div class="upcoming-events">
+                <h3>即將到來的事件</h3>
+                <div id="upcomingList"></div>
+            </div>
+            <div class="legend">
+                <h3>事件分類</h3>
+                <div id="categoryLegend"></div>
+            </div>
+        </aside>
     </div>
-
-    <!-- 事件模態框 -->
-    <div class="modal" id="eventModal">
+    
+    <!-- 事件詳情彈窗 -->
+    <div id="eventModal" class="modal">
         <div class="modal-content">
-            <span class="close">&times;</span>
-            <h3 id="modalTitle">新增事件</h3>
-            <form id="eventForm">
-                <input type="text" id="eventTitle" placeholder="新增標題" required>
-                <input type="date" id="eventDate" required>
-                <input type="date" id="eventEndDate" placeholder="結束日期（可選）">
-                <label class="all-day-container">
-                    <input type="checkbox" id="allDayEvent">
-                    <span>整天</span>
-                </label>
-                <div id="timeInputs">
-                    <input type="time" id="eventStartTime" required>
-                    <input type="time" id="eventEndTime" required>
-                </div>
-                <textarea id="eventDescription" placeholder="新增說明" rows="3"></textarea>
-                <select id="eventColor">
-                    <option value="#3b82f6">藍色</option>
-                    <option value="#10b981">綠色</option>
-                    <option value="#f59e0b">黃色</option>
-                    <option value="#ef4444">紅色</option>
-                    <option value="#8b5cf6">紫色</option>
-                </select>
-                <div class="modal-buttons">
-                    <button type="submit" class="save-btn">儲存</button>
-                    <button type="button" class="delete-btn" id="deleteBtn" style="display: none;">刪除</button>
-                    <button type="button" class="cancel-btn" id="cancelBtn">取消</button>
-                </div>
-            </form>
+            <div class="modal-header">
+                <h2 id="modalTitle">事件詳情</h2>
+                <button class="modal-close">&times;</button>
+            </div>
+            <div class="modal-body" id="modalBody"></div>
         </div>
     </div>
-
-    <!-- 登入模態框 -->
-    <div class="modal" id="authModal">
-        <div class="modal-content">
-            <h3>請輸入密碼</h3>
-            <form id="authForm">
-                <input type="password" id="authPassword" placeholder="密碼" required>
-                <div class="modal-buttons">
-                    <button type="submit" class="save-btn">確認</button>
-                </div>
-            </form>
-        </div>
+    
+    <!-- 載入指示器 -->
+    <div id="loader" class="loader">
+        <div class="spinner"></div>
     </div>
-
+    
     <script src="script.js"></script>
 </body>
 </html>

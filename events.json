@@ -1,0 +1,259 @@
+{
+  "events": [
+    {
+      "id": "evt20250612111423",
+      "title": "前往台南",
+      "description": "參與隔天MOPCON招工，提前下去",
+      "startDate": "2025-06-13",
+      "endDate": "2025-06-13",
+      "category": "work",
+      "color": "#3b82f6",
+      "tags": [],
+      "recurrence": {
+        "type": "none"
+      },
+      "startTime": "15:00",
+      "location": "台北轉運站"
+    },
+    {
+      "id": "evt20250612111616",
+      "title": "MOPCON 2025 志工招募與聯誼會 (南部場)",
+      "description": "招募MOPCON 2025紀錄組志工",
+      "startDate": "2025-06-14",
+      "endDate": "2025-06-14",
+      "category": "work",
+      "color": "#3b82f6",
+      "tags": [],
+      "recurrence": {
+        "type": "none"
+      },
+      "startTime": "12:00",
+      "endTime": "13:00",
+      "location": "成功大學資訊工程系館"
+    },
+    {
+      "id": "evt20250612111825",
+      "title": "MOPCON 2025 志工招募與聯誼會 (北部場)",
+      "description": "招募MOPCON 2025紀錄組志工",
+      "startDate": "2025-06-14",
+      "endDate": "2025-06-14",
+      "category": "work",
+      "color": "#3b82f6",
+      "tags": [],
+      "recurrence": {
+        "type": "none"
+      },
+      "startTime": "19:00",
+      "endTime": "21:00",
+      "location": "MOPCON 2025 志工招募與聯誼會 (北部場)"
+    },
+    {
+      "id": "evt20250612112122",
+      "title": "SITCON Camp 2025 八籌",
+      "description": "STICON Camp 籌會",
+      "startDate": "2025-06-21",
+      "endDate": "2025-06-21",
+      "category": "camp",
+      "color": "#8b5cf6",
+      "tags": [],
+      "recurrence": {
+        "type": "none"
+      },
+      "startTime": "19:00",
+      "endTime": "21:00",
+      "location": "摩茲工寮 / MozTW Space / Mozilla Community Space Taipei"
+    },
+    {
+      "id": "evt20250612112331",
+      "title": "SITCON Camp 2025 九籌",
+      "description": "SITCON Camp 籌會",
+      "startDate": "2025-06-28",
+      "endDate": "2025-06-28",
+      "category": "camp",
+      "color": "#8b5cf6",
+      "tags": [],
+      "recurrence": {
+        "type": "none"
+      },
+      "startTime": "19:00",
+      "endTime": "21:00",
+      "location": "摩茲工寮 / MozTW Space / Mozilla Community Space Taipei"
+    },
+    {
+      "id": "evt20250612112535",
+      "title": "SITCON Camp 2025 十籌",
+      "description": "SITCON Camp 籌會",
+      "startDate": "2025-07-05",
+      "endDate": "2025-07-05",
+      "category": "camp",
+      "color": "#8b5cf6",
+      "tags": [],
+      "recurrence": {
+        "type": "none"
+      },
+      "startTime": "19:00",
+      "endTime": "21:00",
+      "location": "摩茲工寮 / MozTW Space / Mozilla Community Space Taipei"
+    },
+    {
+      "id": "evt20250612112737",
+      "title": "SITCON Camp 2025 營前準備",
+      "description": "Camp 營隊前協助事務",
+      "startDate": "2025-07-07",
+      "endDate": "2025-07-08",
+      "category": "camp",
+      "color": "#8b5cf6",
+      "tags": [],
+      "recurrence": {
+        "type": "none"
+      },
+      "allDay": true,
+      "location": "陽明交通大學光復校區"
+    },
+    {
+      "id": "evt20250612112922",
+      "title": "SITCON Camp 2025",
+      "description": "SITCON Camp 2025",
+      "startDate": "2025-07-09",
+      "endDate": "2025-07-13",
+      "category": "camp",
+      "color": "#8b5cf6",
+      "tags": [],
+      "recurrence": {
+        "type": "none"
+      },
+      "allDay": true,
+      "location": "陽明交通大學光復校區"
+    },
+    {
+      "id": "evt20250612113106",
+      "title": "COSCUP 2025 會前準備",
+      "description": "COSCUP 2025 開源人年會",
+      "startDate": "2025-08-08",
+      "endDate": "2025-08-08",
+      "category": "work",
+      "color": "#3b82f6",
+      "tags": [],
+      "recurrence": {
+        "type": "none"
+      },
+      "startTime": "09:00",
+      "location": "臺灣科技大學"
+    },
+    {
+      "id": "evt20250612113246",
+      "title": "COSCUP 2025",
+      "description": "COSCUP 2025",
+      "startDate": "2025-08-09",
+      "endDate": "2025-08-10",
+      "category": "work",
+      "color": "#3b82f6",
+      "tags": [],
+      "recurrence": {
+        "type": "none"
+      },
+      "allDay": true,
+      "location": "臺灣科技大學"
+    },
+    {
+      "id": "evt20250612113415",
+      "title": "HITCON 2025 台灣駭客年會",
+      "description": "HITCON 2025",
+      "startDate": "2025-08-15",
+      "endDate": "2025-08-16",
+      "category": "work",
+      "color": "#3b82f6",
+      "tags": [],
+      "recurrence": {
+        "type": "none"
+      },
+      "allDay": true,
+      "location": "中央研究院 人文社會科學館"
+    },
+    {
+      "id": "evt20250612113558",
+      "title": "MOPCON 2025 會前準備",
+      "description": "MOPCON 2025",
+      "startDate": "2025-10-31",
+      "endDate": "2025-10-31",
+      "category": "work",
+      "color": "#3b82f6",
+      "tags": [],
+      "recurrence": {
+        "type": "none"
+      },
+      "allDay": true
+    },
+    {
+      "id": "evt20250612113622",
+      "title": "MOPCON 2025",
+      "description": "MOPCON 2025",
+      "startDate": "2025-11-01",
+      "endDate": "2025-11-02",
+      "category": "work",
+      "color": "#3b82f6",
+      "tags": [],
+      "recurrence": {
+        "type": "none"
+      },
+      "allDay": true
+    },
+    {
+      "id": "evt20250612113714",
+      "title": "18歲ㄉ生日",
+      "description": "生日快樂！",
+      "startDate": "2025-09-07",
+      "endDate": "2025-09-07",
+      "category": "personal",
+      "color": "#10b981",
+      "tags": [],
+      "recurrence": {
+        "type": "none"
+      },
+      "allDay": true,
+      "location": "任何地方，無時無刻"
+    }
+  ],
+  "categories": {
+    "work": {
+      "name": "工作",
+      "color": "#3b82f6"
+    },
+    "personal": {
+      "name": "個人",
+      "color": "#10b981"
+    },
+    "meeting": {
+      "name": "會議",
+      "color": "#f59e0b"
+    },
+    "holiday": {
+      "name": "假日",
+      "color": "#ef4444"
+    },
+    "camp": {
+      "name": "營隊",
+      "color": "#8b5cf6"
+    },
+    "education": {
+      "name": "教育",
+      "color": "#06b6d4"
+    },
+    "health": {
+      "name": "健康",
+      "color": "#ec4899"
+    },
+    "social": {
+      "name": "社交",
+      "color": "#f97316"
+    }
+  },
+  "settings": {
+    "defaultView": "month",
+    "weekStartsOn": "sunday",
+    "timeFormat": "24h",
+    "language": "zh-TW",
+    "enableNotifications": true,
+    "theme": "auto"
+  }
+}
