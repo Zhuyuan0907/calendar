@@ -1173,11 +1173,12 @@ aside {
     
     /* 手機版只顯示即將到來的事件 */
     .mobile-upcoming {
-        display: block;
-        background: var(--background);
+        display: block !important;
+        background: var(--surface);
         height: 100%;
         padding: 16px;
         overflow-y: auto;
+        border: 2px solid red; /* 調試用邊框 */
     }
     
     .mobile-upcoming h3 {

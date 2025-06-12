@@ -840,13 +840,21 @@ class CalendarApp {
     }
     
     updateMobileUpcomingEvents() {
+        console.log('updateMobileUpcomingEvents called');
+        
         const mobileUpcomingList = document.getElementById('mobileUpcomingList');
+        const mobileUpcoming = document.getElementById('mobileUpcoming');
+        
+        console.log('mobileUpcoming element:', mobileUpcoming);
+        console.log('mobileUpcomingList element:', mobileUpcomingList);
+        
         if (!mobileUpcomingList) {
             console.log('Mobile upcoming list element not found');
             return;
         }
         
-        mobileUpcomingList.innerHTML = '';
+        // 先添加測試內容
+        mobileUpcomingList.innerHTML = '<p style="color: red; font-size: 20px;">測試：手機版事件載入中...</p>';
         
         const today = new Date();
         const nextTwoWeeks = new Date();
@@ -857,6 +865,10 @@ class CalendarApp {
             .slice(0, 8);
         
         console.log('Mobile upcoming events:', upcomingEvents.length);
+        console.log('Events:', upcomingEvents);
+        
+        // 清空測試內容
+        mobileUpcomingList.innerHTML = '';
         
         upcomingEvents.forEach(event => {
             const eventEl = document.createElement('div');
@@ -880,6 +892,8 @@ class CalendarApp {
         if (upcomingEvents.length === 0) {
             mobileUpcomingList.innerHTML = '<p class="no-events">接下來兩週沒有事件</p>';
         }
+        
+        console.log('Mobile upcoming events updated, final HTML:', mobileUpcomingList.innerHTML);
     }
     
     updateCategoryLegend() {
