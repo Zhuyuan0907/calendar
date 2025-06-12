@@ -15,12 +15,55 @@ class CalendarApp {
     async init() {
         await this.loadEvents();
         this.setupEventListeners();
+        this.checkMobileView();
         this.render();
         this.updateMiniCalendar();
         this.updateUpcomingEvents();
         this.updateMobileUpcomingEvents();
         this.updateCategoryLegend();
         this.checkTheme();
+    }
+    
+    checkMobileView() {
+        const isMobile = window.innerWidth <= 768;
+        console.log('Is mobile view:', isMobile, 'Window width:', window.innerWidth);
+        
+        if (isMobile) {
+            // 強制手機版樣式
+            document.body.classList.add('mobile-view');
+            
+            // 隱藏桌面版元素
+            const main = document.querySelector('main');
+            const aside = document.querySelector('aside');
+            const headerCenter = document.querySelector('.header-center');
+            const searchContainer = document.querySelector('.search-container');
+            const filterContainer = document.querySelector('.filter-container');
+            const viewControls = document.querySelector('.view-controls');
+            
+            if (main) {
+                const viewContainers = main.querySelectorAll('.view-container');
+                viewContainers.forEach(container => container.style.display = 'none');
+            }
+            if (aside) aside.style.display = 'none';
+            if (headerCenter) headerCenter.style.display = 'none';
+            if (searchContainer) searchContainer.style.display = 'none';
+            if (filterContainer) filterContainer.style.display = 'none';
+            if (viewControls) viewControls.style.display = 'none';
+            
+            // 顯示手機版事件
+            const mobileUpcoming = document.getElementById('mobileUpcoming');
+            if (mobileUpcoming) {
+                mobileUpcoming.style.display = 'block';
+                mobileUpcoming.style.background = 'var(--surface)';
+                mobileUpcoming.style.height = 'calc(100vh - 80px)';
+                mobileUpcoming.style.padding = '16px';
+                mobileUpcoming.style.overflowY = 'auto';
+                mobileUpcoming.style.border = '3px solid red';
+                console.log('Mobile upcoming element styled');
+            } else {
+                console.log('Mobile upcoming element not found');
+            }
+        }
     }
     
     async loadEvents() {
@@ -139,6 +182,7 @@ class CalendarApp {
         window.addEventListener('resize', () => {
             clearTimeout(resizeTimeout);
             resizeTimeout = setTimeout(() => {
+                this.checkMobileView();
                 if (this.currentView === 'week' || this.currentView === 'day') {
                     this.render();
                 }

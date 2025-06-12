@@ -1096,7 +1096,7 @@ aside {
     }
 }
 
-@media (max-width: 768px) {
+@media screen and (max-width: 768px) {
     .container {
         padding: 8px;
         gap: 8px;
