@@ -712,6 +712,11 @@ aside {
 .event-health { background: #ec4899; color: white; }
 .event-social { background: #f97316; color: white; }
 
+/* 手機版即將到來事件 - 默認隱藏 */
+.mobile-upcoming {
+    display: none;
+}
+
 /* Loader */
 .loader {
     display: none;
@@ -1095,27 +1100,23 @@ aside {
     .container {
         padding: 8px;
         gap: 8px;
-        height: auto;
-        min-height: 100vh;
+        height: 100vh;
+        grid-template-areas: 
+            "header"
+            "main";
+        grid-template-columns: 1fr;
+        grid-template-rows: auto 1fr;
     }
     
+    /* 簡化標題 */
     header {
-        flex-direction: column;
-        gap: 12px;
+        flex-direction: row;
+        justify-content: space-between;
+        align-items: center;
+        gap: 8px;
         height: auto;
         padding: 8px 0;
-    }
-    
-    .header-left,
-    .header-center,
-    .header-right {
-        width: 100%;
-        justify-content: center;
-    }
-    
-    .header-left {
-        flex-direction: column;
-        gap: 8px;
+        border-bottom: 1px solid var(--border);
     }
     
     .header-left h1 {
@@ -1123,102 +1124,124 @@ aside {
         margin: 0;
     }
     
+    .today-btn {
+        padding: 6px 12px;
+        font-size: 12px;
+    }
+    
+    /* 隱藏其他標題元素 */
+    .header-center,
     .header-right {
-        flex-wrap: wrap;
-        gap: 8px;
+        display: none;
     }
     
-    .search-container input {
-        width: 120px;
-        font-size: 14px;
-        padding: 6px 12px;
-    }
-    
-    .filter-container select {
-        font-size: 14px;
-        padding: 6px 12px;
-    }
-    
-    .view-controls {
-        padding: 2px;
-    }
-    
-    .view-btn {
-        padding: 4px 8px;
-        font-size: 14px;
-    }
-    
+    /* 隱藏主要內容視圖 */
     main {
-        height: auto;
-        min-height: 50vh;
+        display: none;
     }
     
-    .view-container {
-        padding: 12px;
-    }
-    
-    .calendar-day {
-        min-height: 60px;
-        padding: 4px;
-    }
-    
-    .day-number {
-        font-size: 14px;
-    }
-    
-    .event-item {
-        font-size: 10px;
-        padding: 1px 4px;
-    }
-    
+    /* 隱藏側邊欄 */
     aside {
-        grid-template-columns: 1fr;
-        gap: 8px;
-        height: auto;
+        display: none;
     }
     
-    .mini-calendar,
-    .upcoming-events,
-    .legend {
-        padding: 12px;
-        min-height: 150px;
-    }
-    
-    .mini-calendar {
-        height: 180px;
-    }
-    
-    .week-content,
-    .day-content {
-        overflow-x: auto;
-    }
-    
-    .modal-content {
-        margin: 2% auto;
-        width: 95%;
-        max-height: 90vh;
+    /* 手機版只顯示即將到來的事件 */
+    .mobile-upcoming {
+        display: block;
+        background: var(--background);
+        height: calc(100vh - 80px);
+        padding: 16px;
         overflow-y: auto;
+        grid-area: main;
+    }
+    
+    .mobile-upcoming h3 {
+        font-size: 20px;
+        margin-bottom: 16px;
+        color: var(--text-primary);
+        font-weight: 600;
+        text-align: center;
+    }
+    
+    .mobile-upcoming-list {
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+    }
+    
+    .mobile-upcoming-event {
+        display: flex;
+        gap: 12px;
+        padding: 16px;
+        background: var(--surface);
+        border-radius: var(--radius);
+        cursor: pointer;
+        transition: var(--transition);
+        border: 1px solid var(--border);
+        box-shadow: 0 2px 8px var(--shadow);
+    }
+    
+    .mobile-upcoming-event:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px var(--shadow);
+        border-color: var(--primary-color);
+    }
+    
+    .mobile-upcoming-date {
+        font-weight: 700;
+        color: var(--primary-color);
+        min-width: 45px;
+        text-align: center;
+        background: rgba(59, 130, 246, 0.1);
+        border-radius: 8px;
+        padding: 12px 6px;
+        font-size: 16px;
+        line-height: 1;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+    }
+    
+    .mobile-upcoming-details {
+        flex: 1;
+    }
+    
+    .mobile-upcoming-details h5 {
+        font-size: 16px;
+        margin-bottom: 4px;
+        color: var(--text-primary);
+        font-weight: 600;
+    }
+    
+    .mobile-upcoming-details p {
+        font-size: 14px;
+        color: var(--text-secondary);
+        margin-bottom: 2px;
+    }
+    
+    .mobile-upcoming-details .event-category {
+        display: inline-block;
+        padding: 2px 8px;
+        border-radius: 12px;
+        font-size: 12px;
+        color: white;
+        margin-top: 4px;
+    }
+    
+    /* 模態視窗居中調整 */
+    .modal-content {
+        margin: 10% auto;
+        width: 90%;
+        max-height: 80vh;
+        overflow-y: auto;
+        position: relative;
+        top: 50%;
+        transform: translateY(-50%);
     }
     
     .modal-header,
     .modal-body {
         padding: 16px;
-    }
-    
-    .weekdays > div {
-        font-size: 12px;
-        padding: 8px 0;
-    }
-    
-    .nav-btn {
-        width: 32px;
-        height: 32px;
-        font-size: 18px;
-    }
-    
-    #currentPeriod {
-        font-size: 16px;
-        min-width: 150px;
     }
 }
 

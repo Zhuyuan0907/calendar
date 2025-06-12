@@ -18,6 +18,7 @@ class CalendarApp {
         this.render();
         this.updateMiniCalendar();
         this.updateUpcomingEvents();
+        this.updateMobileUpcomingEvents();
         this.updateCategoryLegend();
         this.checkTheme();
     }
@@ -112,12 +113,14 @@ class CalendarApp {
         document.getElementById('searchInput').addEventListener('input', (e) => {
             this.searchQuery = e.target.value.toLowerCase();
             this.render();
+            this.updateMobileUpcomingEvents();
         });
         
         // 分類過濾
         document.getElementById('categoryFilter').addEventListener('change', (e) => {
             this.selectedCategory = e.target.value;
             this.render();
+            this.updateMobileUpcomingEvents();
         });
         
         // 匯出功能
@@ -129,6 +132,17 @@ class CalendarApp {
             if (e.target.classList.contains('modal')) {
                 this.closeModal();
             }
+        });
+        
+        // 視窗大小變化時重新渲染（用於響應式設計）
+        let resizeTimeout;
+        window.addEventListener('resize', () => {
+            clearTimeout(resizeTimeout);
+            resizeTimeout = setTimeout(() => {
+                if (this.currentView === 'week' || this.currentView === 'day') {
+                    this.render();
+                }
+            }, 250);
         });
     }
     
@@ -146,12 +160,14 @@ class CalendarApp {
         }
         this.render();
         this.updateMiniCalendar();
+        this.updateMobileUpcomingEvents();
     }
     
     goToToday() {
         this.currentDate = new Date();
         this.render();
         this.updateMiniCalendar();
+        this.updateMobileUpcomingEvents();
     }
     
     switchView(view) {
@@ -296,20 +312,24 @@ class CalendarApp {
         }
         
         // 渲染週視圖網格
+        const isMobile = window.innerWidth <= 768;
+        const hourHeight = isMobile ? 40 : 60;
+        const totalHeight = 24 * hourHeight;
+        
         weekGrid.style.position = 'relative';
-        weekGrid.style.height = '1440px'; // 24 * 60px
+        weekGrid.style.height = `${totalHeight}px`;
         
         for (let i = 0; i < 7; i++) {
             const dayColumn = document.createElement('div');
             dayColumn.className = 'week-day-column';
             dayColumn.style.position = 'relative';
-            dayColumn.style.height = '1440px';
+            dayColumn.style.height = `${totalHeight}px`;
             
             // 創建時間背景格子
             for (let hour = 0; hour < 24; hour++) {
                 const hourSlot = document.createElement('div');
                 hourSlot.className = 'hour-slot';
-                hourSlot.style.height = '60px';
+                hourSlot.style.height = `${hourHeight}px`;
                 hourSlot.style.borderBottom = '1px solid var(--border)';
                 dayColumn.appendChild(hourSlot);
             }
@@ -350,7 +370,13 @@ class CalendarApp {
         // 清空並重新設置日事件容器
         dayEvents.innerHTML = '';
         dayEvents.style.position = 'relative';
-        dayEvents.style.height = '1440px'; // 24 * 60px = 1440px
+        
+        // 根據螢幕寬度調整時間軸高度
+        const isMobile = window.innerWidth <= 768;
+        const hourHeight = isMobile ? 40 : 60;
+        const totalHeight = 24 * hourHeight;
+        
+        dayEvents.style.height = `${totalHeight}px`;
         dayEvents.style.overflow = 'visible';
         
         // 渲染當天事件
@@ -445,10 +471,13 @@ class CalendarApp {
         const endHour = event.endTime ? parseInt(event.endTime.split(':')[0]) : startHour + 1;
         const endMinute = event.endTime ? parseInt(event.endTime.split(':')[1]) : 0;
         
-        // 簡單的時間計算：每小時60px
-        const top = startHour * 60 + startMinute;
-        const endPos = endHour * 60 + endMinute;
-        const height = Math.max(endPos - top, 30);
+        // 根據螢幕寬度調整時間軸高度
+        const isMobile = window.innerWidth <= 768;
+        const hourHeight = isMobile ? 40 : 60;
+        
+        const top = startHour * hourHeight + (startMinute * hourHeight / 60);
+        const endPos = endHour * hourHeight + (endMinute * hourHeight / 60);
+        const height = Math.max(endPos - top, isMobile ? 25 : 30);
         
         // 明確設定樣式
         eventEl.style.position = 'absolute';
@@ -497,10 +526,13 @@ class CalendarApp {
         const endHour = event.endTime ? parseInt(event.endTime.split(':')[0]) : startHour + 1;
         const endMinute = event.endTime ? parseInt(event.endTime.split(':')[1]) : 0;
         
-        // 簡單的時間計算：每小時60px
-        const top = startHour * 60 + startMinute;
-        const endPos = endHour * 60 + endMinute;
-        const height = Math.max(endPos - top, 40); // 最小高度增加到40px
+        // 根據螢幕寬度調整時間軸高度
+        const isMobile = window.innerWidth <= 768;
+        const hourHeight = isMobile ? 40 : 60;
+        
+        const top = startHour * hourHeight + (startMinute * hourHeight / 60);
+        const endPos = endHour * hourHeight + (endMinute * hourHeight / 60);
+        const height = Math.max(endPos - top, isMobile ? 30 : 40);
         
         // 明確設定樣式
         eventEl.style.position = 'absolute';
@@ -799,6 +831,42 @@ class CalendarApp {
         
         if (upcomingEvents.length === 0) {
             upcomingList.innerHTML = '<p class="no-events">接下來一週沒有事件</p>';
+        }
+    }
+    
+    updateMobileUpcomingEvents() {
+        const mobileUpcomingList = document.getElementById('mobileUpcomingList');
+        mobileUpcomingList.innerHTML = '';
+        
+        const today = new Date();
+        const nextTwoWeeks = new Date();
+        nextTwoWeeks.setDate(nextTwoWeeks.getDate() + 14);
+        
+        const upcomingEvents = this.getEventsBetweenDates(today, nextTwoWeeks)
+            .sort((a, b) => new Date(a.startDate) - new Date(b.startDate))
+            .slice(0, 8);
+        
+        upcomingEvents.forEach(event => {
+            const eventEl = document.createElement('div');
+            eventEl.className = 'mobile-upcoming-event';
+            const eventDate = new Date(event.startDate);
+            const categoryColor = this.categories[event.category]?.color || '#3b82f6';
+            const categoryName = this.categories[event.category]?.name || '';
+            
+            eventEl.innerHTML = `
+                <div class="mobile-upcoming-date">${eventDate.getDate()}</div>
+                <div class="mobile-upcoming-details">
+                    <h5>${event.title}</h5>
+                    <p>${event.startTime || '全天'} ${event.location ? `• ${event.location}` : ''}</p>
+                    <span class="event-category" style="background: ${categoryColor}">${categoryName}</span>
+                </div>
+            `;
+            eventEl.addEventListener('click', () => this.showEventDetails(event));
+            mobileUpcomingList.appendChild(eventEl);
+        });
+        
+        if (upcomingEvents.length === 0) {
+            mobileUpcomingList.innerHTML = '<p class="no-events">接下來兩週沒有事件</p>';
         }
     }
     
