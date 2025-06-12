@@ -1119,6 +1119,12 @@ aside {
         border-bottom: 1px solid var(--border);
     }
     
+    .header-left {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+    
     .header-left h1 {
         font-size: 18px;
         margin: 0;
@@ -1129,15 +1135,35 @@ aside {
         font-size: 12px;
     }
     
+    /* 顯示主題切換按鈕 */
+    .header-right {
+        display: flex;
+    }
+    
+    .theme-btn {
+        width: 36px;
+        height: 36px;
+        font-size: 18px;
+    }
+    
     /* 隱藏其他標題元素 */
     .header-center,
-    .header-right {
+    .search-container,
+    .filter-container,
+    .view-controls {
         display: none;
     }
     
     /* 隱藏主要內容視圖 */
-    main {
+    main .view-container {
         display: none;
+    }
+    
+    main {
+        display: block;
+        background: var(--background);
+        height: calc(100vh - 80px);
+        overflow: hidden;
     }
     
     /* 隱藏側邊欄 */
@@ -1149,10 +1175,9 @@ aside {
     .mobile-upcoming {
         display: block;
         background: var(--background);
-        height: calc(100vh - 80px);
+        height: 100%;
         padding: 16px;
         overflow-y: auto;
-        grid-area: main;
     }
     
     .mobile-upcoming h3 {

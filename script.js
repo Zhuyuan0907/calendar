@@ -165,9 +165,14 @@ class CalendarApp {
     
     goToToday() {
         this.currentDate = new Date();
-        this.render();
-        this.updateMiniCalendar();
-        this.updateMobileUpcomingEvents();
+        // 在手機版只需要更新即將到來的事件
+        if (window.innerWidth <= 768) {
+            this.updateMobileUpcomingEvents();
+        } else {
+            this.render();
+            this.updateMiniCalendar();
+            this.updateMobileUpcomingEvents();
+        }
     }
     
     switchView(view) {
@@ -836,6 +841,11 @@ class CalendarApp {
     
     updateMobileUpcomingEvents() {
         const mobileUpcomingList = document.getElementById('mobileUpcomingList');
+        if (!mobileUpcomingList) {
+            console.log('Mobile upcoming list element not found');
+            return;
+        }
+        
         mobileUpcomingList.innerHTML = '';
         
         const today = new Date();
@@ -845,6 +855,8 @@ class CalendarApp {
         const upcomingEvents = this.getEventsBetweenDates(today, nextTwoWeeks)
             .sort((a, b) => new Date(a.startDate) - new Date(b.startDate))
             .slice(0, 8);
+        
+        console.log('Mobile upcoming events:', upcomingEvents.length);
         
         upcomingEvents.forEach(event => {
             const eventEl = document.createElement('div');
